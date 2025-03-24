@@ -1,0 +1,99 @@
+2025-03-23 18:25:45,975 - advanced_code_generator - INFO - Starting application fixes...
+2025-03-23 18:25:48,182 - advanced_code_generator - INFO - Fixing main.py...
+2025-03-23 18:25:48,183 - advanced_code_generator - INFO - Fixed main.py successfully
+2025-03-23 18:25:48,242 - advanced_code_generator - INFO - Created placeholder splash image at assets/icons/splash.png
+2025-03-23 18:25:48,243 - advanced_code_generator - INFO - Created placeholder app icon at assets/icons/app_icon.png
+2025-03-23 18:25:48,244 - advanced_code_generator - INFO - Created run.py script
+2025-03-23 18:25:48,245 - advanced_code_generator - INFO - All fixes completed successfully!
+2025-03-23 18:25:48,245 - advanced_code_generator - INFO - Run the application with: python run.py
+2025-03-23 18:56:11,758 - run - INFO - Importing main application...
+2025-03-23 18:56:11,788 - run - INFO - Creating main window...
+2025-03-23 18:56:11,789 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 18:56:11,795 - core.model_manager - INFO - Model manager initialized
+2025-03-23 18:56:11,843 - app - INFO - Application initialized
+2025-03-23 18:56:11,904 - run - INFO - Application started successfully
+2025-03-23 18:56:28,776 - core.model_manager - INFO - Set quantization: 8-bit=True, 4-bit=False
+2025-03-23 18:56:28,777 - core.model_manager - INFO - Set device map: auto
+2025-03-23 18:56:31,560 - core.model_manager - INFO - Loading model: bigcode/starcoder
+2025-03-23 18:56:34,190 - core.model_manager - INFO - Attempting to load model with standard AutoModelForCausalLM
+2025-03-23 19:04:10,640 - run - INFO - Importing main application...
+2025-03-23 19:04:10,655 - run - INFO - Creating main window...
+2025-03-23 19:04:10,656 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:04:10,658 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:04:10,710 - run - ERROR - Error starting application: 'ConversationTab' object has no attribute 'on_model_unloaded'
+2025-03-23 19:04:10,711 - run - ERROR - Error displaying error message: local variable 'e' referenced before assignment
+2025-03-23 19:04:28,250 - run - INFO - Importing main application...
+2025-03-23 19:04:28,257 - run - INFO - Creating main window...
+2025-03-23 19:04:28,258 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:04:28,260 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:04:28,293 - src.gui.conversation_tab - INFO - Loaded 1 conversations
+2025-03-23 19:04:28,300 - run - ERROR - Error starting application: 'ConversationTab' object has no attribute 'on_model_unloaded'
+2025-03-23 19:04:28,300 - run - ERROR - Error displaying error message: local variable 'e' referenced before assignment
+2025-03-23 19:05:13,987 - run - INFO - Importing main application...
+2025-03-23 19:05:13,994 - run - INFO - Creating main window...
+2025-03-23 19:05:13,995 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:05:13,996 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:05:14,031 - src.gui.conversation_tab - INFO - Loaded 1 conversations
+2025-03-23 19:05:14,039 - run - ERROR - Error starting application: 'ConversationTab' object has no attribute 'on_model_unloaded'
+2025-03-23 19:05:14,039 - run - ERROR - Error displaying error message: local variable 'e' referenced before assignment
+2025-03-23 19:05:15,875 - run - INFO - Importing main application...
+2025-03-23 19:05:15,881 - run - INFO - Creating main window...
+2025-03-23 19:05:15,882 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:05:15,883 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:05:15,915 - src.gui.conversation_tab - INFO - Loaded 1 conversations
+2025-03-23 19:05:15,921 - run - ERROR - Error starting application: 'ConversationTab' object has no attribute 'on_model_unloaded'
+2025-03-23 19:05:15,922 - run - ERROR - Error displaying error message: local variable 'e' referenced before assignment
+2025-03-23 19:08:33,906 - run - INFO - Importing main application...
+2025-03-23 19:08:33,917 - run - INFO - Creating main window...
+2025-03-23 19:08:33,918 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:08:33,919 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:08:33,952 - src.gui.conversation_tab - INFO - Loaded 1 conversations
+2025-03-23 19:08:33,967 - app - INFO - Application initialized
+2025-03-23 19:08:34,019 - run - INFO - Application started successfully
+2025-03-23 19:08:53,291 - core.model_manager - INFO - Set quantization: 8-bit=True, 4-bit=False
+2025-03-23 19:08:53,292 - core.model_manager - INFO - Set device map: auto
+2025-03-23 19:08:56,935 - core.model_manager - INFO - Loading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:08:57,345 - datasets - INFO - PyTorch version 2.6.0+cu126 available.
+2025-03-23 19:08:57,347 - datasets - INFO - Disabling Tensorflow because USE_TORCH is set
+2025-03-23 19:08:57,864 - auto_gptq.nn_modules.qlinear.qlinear_cuda - WARNING - CUDA extension not installed.
+2025-03-23 19:08:57,866 - auto_gptq.nn_modules.qlinear.qlinear_cuda_old - WARNING - CUDA extension not installed.
+2025-03-23 19:08:57,880 - core.model_manager - INFO - Using auto_gptq for model loading
+2025-03-23 19:08:58,161 - core.model_manager - INFO - Attempting to load model with standard AutoModelForCausalLM
+2025-03-23 19:08:58,340 - core.model_manager - WARNING - Standard loading failed: 'BitsAndBytesConfig' object has no attribute 'get_loading_attributes'
+2025-03-23 19:08:58,340 - core.model_manager - INFO - Attempting to load GPTQ model with specific loader
+2025-03-23 19:08:58,418 - auto_gptq.modeling._base - WARNING - Exllamav2 kernel is not installed, reset disable_exllamav2 to True. This may because you installed auto_gptq using a pre-build wheel on Windows, in which exllama_kernels are not compiled. To use exllama_kernels to further speedup inference, you can re-install auto_gptq from source.
+2025-03-23 19:08:58,418 - auto_gptq.modeling._base - WARNING - CUDA kernels for auto_gptq are not installed, this will result in very slow inference speed. This may because:
+1. You disabled CUDA extensions compilation by setting BUILD_CUDA_EXT=0 when install auto_gptq from source.
+2. You are using pytorch without CUDA support.
+3. CUDA and nvcc are not installed in your device.
+2025-03-23 19:08:59,147 - auto_gptq.modeling._base - INFO - The layer lm_head is not quantized.
+2025-03-23 19:08:59,867 - accelerate.utils.modeling - INFO - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+2025-03-23 19:09:05,183 - accelerate.utils.modeling - WARNING - Some weights of the model checkpoint at C:\Users\drews\.cache\huggingface\hub\models--TheBloke--Llama-2-7B-Chat-GPTQ\snapshots\d5ad9310836dd91b6ac6133e2e47f47394386cea\model.safetensors were not used when initializing LlamaForCausalLM: {'model.layers.16.self_attn.rotary_emb.inv_freq', 'model.layers.10.self_attn.rotary_emb.inv_freq', 'model.layers.29.self_attn.rotary_emb.inv_freq', 'model.layers.30.self_attn.rotary_emb.inv_freq', 'model.layers.28.self_attn.rotary_emb.inv_freq', 'model.layers.11.self_attn.rotary_emb.inv_freq', 'model.layers.0.self_attn.rotary_emb.inv_freq', 'model.layers.24.self_attn.rotary_emb.inv_freq', 'model.layers.17.self_attn.rotary_emb.inv_freq', 'model.layers.2.self_attn.rotary_emb.inv_freq', 'model.layers.26.self_attn.rotary_emb.inv_freq', 'model.layers.5.self_attn.rotary_emb.inv_freq', 'model.layers.20.self_attn.rotary_emb.inv_freq', 'model.layers.14.self_attn.rotary_emb.inv_freq', 'model.layers.1.self_attn.rotary_emb.inv_freq', 'model.layers.31.self_attn.rotary_emb.inv_freq', 'model.layers.9.self_attn.rotary_emb.inv_freq', 'model.layers.7.self_attn.rotary_emb.inv_freq', 'model.layers.15.self_attn.rotary_emb.inv_freq', 'model.layers.18.self_attn.rotary_emb.inv_freq', 'model.layers.23.self_attn.rotary_emb.inv_freq', 'model.layers.8.self_attn.rotary_emb.inv_freq', 'model.layers.25.self_attn.rotary_emb.inv_freq', 'model.layers.19.self_attn.rotary_emb.inv_freq', 'model.layers.13.self_attn.rotary_emb.inv_freq', 'model.layers.21.self_attn.rotary_emb.inv_freq', 'model.layers.12.self_attn.rotary_emb.inv_freq', 'model.layers.22.self_attn.rotary_emb.inv_freq', 'model.layers.27.self_attn.rotary_emb.inv_freq', 'model.layers.3.self_attn.rotary_emb.inv_freq', 'model.layers.4.self_attn.rotary_emb.inv_freq', 'model.layers.6.self_attn.rotary_emb.inv_freq'}. This may or may not be an issue - make sure that the checkpoint does not have unnecessary parameters, or that the model definition correctly corresponds to the checkpoint.
+2025-03-23 19:09:05,205 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ loaded successfully
+2025-03-23 19:09:58,846 - run - INFO - Importing main application...
+2025-03-23 19:09:58,857 - run - INFO - Creating main window...
+2025-03-23 19:09:58,858 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:09:58,859 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:09:58,892 - src.gui.conversation_tab - INFO - Loaded 1 conversations
+2025-03-23 19:09:58,907 - app - INFO - Application initialized
+2025-03-23 19:09:58,959 - run - INFO - Application started successfully
+2025-03-23 19:10:09,597 - core.model_manager - INFO - Set quantization: 8-bit=True, 4-bit=False
+2025-03-23 19:10:09,597 - core.model_manager - INFO - Set device map: auto
+2025-03-23 19:10:12,406 - core.model_manager - INFO - Loading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:10:12,734 - datasets - INFO - PyTorch version 2.6.0+cu126 available.
+2025-03-23 19:10:12,735 - datasets - INFO - Disabling Tensorflow because USE_TORCH is set
+2025-03-23 19:10:13,079 - auto_gptq.nn_modules.qlinear.qlinear_cuda - WARNING - CUDA extension not installed.
+2025-03-23 19:10:13,081 - auto_gptq.nn_modules.qlinear.qlinear_cuda_old - WARNING - CUDA extension not installed.
+2025-03-23 19:10:13,091 - core.model_manager - INFO - Using auto_gptq for model loading
+2025-03-23 19:10:13,377 - core.model_manager - INFO - Attempting to load model with standard AutoModelForCausalLM
+2025-03-23 19:10:13,519 - core.model_manager - WARNING - Standard loading failed: 'BitsAndBytesConfig' object has no attribute 'get_loading_attributes'
+2025-03-23 19:10:13,519 - core.model_manager - INFO - Attempting to load GPTQ model with specific loader
+2025-03-23 19:10:13,592 - auto_gptq.modeling._base - WARNING - Exllamav2 kernel is not installed, reset disable_exllamav2 to True. This may because you installed auto_gptq using a pre-build wheel on Windows, in which exllama_kernels are not compiled. To use exllama_kernels to further speedup inference, you can re-install auto_gptq from source.
+2025-03-23 19:10:13,593 - auto_gptq.modeling._base - WARNING - CUDA kernels for auto_gptq are not installed, this will result in very slow inference speed. This may because:
+1. You disabled CUDA extensions compilation by setting BUILD_CUDA_EXT=0 when install auto_gptq from source.
+2. You are using pytorch without CUDA support.
+3. CUDA and nvcc are not installed in your device.
+2025-03-23 19:10:13,917 - auto_gptq.modeling._base - INFO - The layer lm_head is not quantized.
+2025-03-23 19:10:14,505 - accelerate.utils.modeling - INFO - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+2025-03-23 19:10:16,710 - accelerate.utils.modeling - WARNING - Some weights of the model checkpoint at C:\Users\drews\.cache\huggingface\hub\models--TheBloke--Llama-2-7B-Chat-GPTQ\snapshots\d5ad9310836dd91b6ac6133e2e47f47394386cea\model.safetensors were not used when initializing LlamaForCausalLM: {'model.layers.10.self_attn.rotary_emb.inv_freq', 'model.layers.11.self_attn.rotary_emb.inv_freq', 'model.layers.24.self_attn.rotary_emb.inv_freq', 'model.layers.25.self_attn.rotary_emb.inv_freq', 'model.layers.8.self_attn.rotary_emb.inv_freq', 'model.layers.0.self_attn.rotary_emb.inv_freq', 'model.layers.14.self_attn.rotary_emb.inv_freq', 'model.layers.1.self_attn.rotary_emb.inv_freq', 'model.layers.5.self_attn.rotary_emb.inv_freq', 'model.layers.30.self_attn.rotary_emb.inv_freq', 'model.layers.2.self_attn.rotary_emb.inv_freq', 'model.layers.17.self_attn.rotary_emb.inv_freq', 'model.layers.16.self_attn.rotary_emb.inv_freq', 'model.layers.7.self_attn.rotary_emb.inv_freq', 'model.layers.12.self_attn.rotary_emb.inv_freq', 'model.layers.3.self_attn.rotary_emb.inv_freq', 'model.layers.4.self_attn.rotary_emb.inv_freq', 'model.layers.13.self_attn.rotary_emb.inv_freq', 'model.layers.6.self_attn.rotary_emb.inv_freq', 'model.layers.20.self_attn.rotary_emb.inv_freq', 'model.layers.26.self_attn.rotary_emb.inv_freq', 'model.layers.18.self_attn.rotary_emb.inv_freq', 'model.layers.21.self_attn.rotary_emb.inv_freq', 'model.layers.19.self_attn.rotary_emb.inv_freq', 'model.layers.23.self_attn.rotary_emb.inv_freq', 'model.layers.28.self_attn.rotary_emb.inv_freq', 'model.layers.9.self_attn.rotary_emb.inv_freq', 'model.layers.29.self_attn.rotary_emb.inv_freq', 'model.layers.22.self_attn.rotary_emb.inv_freq', 'model.layers.15.self_attn.rotary_emb.inv_freq', 'model.layers.27.self_attn.rotary_emb.inv_freq', 'model.layers.31.self_attn.rotary_emb.inv_freq'}. This may or may not be an issue - make sure that the checkpoint does not have unnecessary parameters, or that the model definition correctly corresponds to the checkpoint.
+2025-03-23 19:10:16,727 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ loaded successfully
