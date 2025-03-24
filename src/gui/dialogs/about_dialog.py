@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
 from PyQt5.QtGui import QPixmap, QFont, QIcon
 from PyQt5.QtCore import Qt
 
-from version import VERSION, VERSION_DISPLAY
+from src.version import VERSION, VERSION_DISPLAY
 
 class AboutDialog(QDialog):
     """About dialog with application information across multiple tabs"""
@@ -20,6 +20,9 @@ class AboutDialog(QDialog):
         
         self.setWindowTitle("About Advanced Code Generator")
         self.setMinimumSize(600, 400)
+        
+        # You can use VERSION here
+        print(VERSION)
         
         self.init_ui()
     

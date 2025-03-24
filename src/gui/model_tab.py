@@ -8,11 +8,80 @@ import logging
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, 
                            QComboBox, QPushButton, QGroupBox, QFormLayout, 
                            QRadioButton, QButtonGroup, QProgressBar, QMessageBox,
-                           QSpacerItem, QSizePolicy)
+                           QSpacerItem, QSizePolicy, QFileDialog)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QFont
 
 # Logger for this module
 logger = logging.getLogger(__name__)
+
+class ModelDownloadThread(QThread):
+    """Thread for downloading models in the background"""
+    
+    # Signals
+    progress_updated = pyqtSignal(int)
+    status_updated = pyqtSignal(str)
+    download_finished = pyqtSignal(bool, str)
+    
+    def __init__(self, model_id, download_path, token=None, parent=None):
+        super().__init__(parent)
+        self.model_id = model_id
+        self.download_path = download_path
+        self.token = token
+        self.is_stopped = False
+    
+    def run(self):
+        """Run the model download thread"""
+        try:
+            # Import libraries
+            from huggingface_hub import snapshot_download, HfApi
+            import os
+            
+            # Update status
+            self.status_updated.emit(f"Downloading model: {self.model_id}")
+            self.progress_updated.emit(10)
+            
+            # Ensure download directory exists
+            os.makedirs(self.download_path, exist_ok=True)
+            
+            # Prepare authentication
+            kwargs = {
+                'local_dir': self.download_path,
+                'local_dir_use_symlinks': False,
+                'resume_download': True,
+                'ignore_patterns': ["*.pt", "*.bin"]  # Ignore large checkpoint files if needed
+            }
+            
+            # Add token if provided
+            if self.token:
+                kwargs['token'] = self.token
+            
+            # Perform download without progress tracking
+            self.status_updated.emit("Downloading model (progress updates not available)...")
+            self.progress_updated.emit(30)  # Set to 30% as we begin download
+            
+            # Do the actual download
+            snapshot_download(self.model_id, **kwargs)
+            
+            # Final updates
+            self.progress_updated.emit(100)
+            self.status_updated.emit(f"Model {self.model_id} downloaded successfully")
+            
+            # Emit completion signal
+            self.download_finished.emit(True, f"Model downloaded to {self.download_path}")
+            
+        except Exception as e:
+            logger.error(f"Error downloading model: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
+            self.status_updated.emit(f"Error: {str(e)}")
+            self.download_finished.emit(False, str(e))
+    
+    def stop(self):
+        """Stop the download process"""
+        self.is_stopped = True
+
 
 class ModelLoadThread(QThread):
     """Thread for loading models in the background"""
@@ -27,47 +96,45 @@ class ModelLoadThread(QThread):
         self.model_manager = model_manager
         self.model_id = model_id
         self.token = token
-        self.is_stopped = False
     
     def run(self):
         """Run the model loading thread"""
         try:
             # Update status
-            self.status_updated.emit(f"Loading model: {self.model_id}")
-            self.progress_updated.emit(10)  # Initial progress
+            self.status_updated.emit(f"Preparing to load model: {self.model_id}")
+            self.progress_updated.emit(10)
             
-            # Set quantization options based on model manager settings
-            # (This is already handled in the model manager)
+            # Set HF token if provided
+            if self.token:
+                self.status_updated.emit("Setting Hugging Face token")
+                self.model_manager.set_huggingface_token(self.token)
             
             # Load the model
-            tokenizer, model = self.model_manager.load_model(
-                self.model_id, 
-                token=self.token,
-                force_reload=False
-            )
+            self.status_updated.emit(f"Loading model: {self.model_id}")
+            self.progress_updated.emit(30)
             
-            # Final updates
+            tokenizer, model = self.model_manager.load_model(self.model_id)
+            
             self.progress_updated.emit(100)
             self.status_updated.emit(f"Model {self.model_id} loaded successfully")
             
-            # Emit completion signal
+            # Emit completion signal with the loaded model
             self.load_finished.emit(True, "Model loaded successfully", tokenizer, model)
             
         except Exception as e:
             logger.error(f"Error loading model: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
+            
             self.status_updated.emit(f"Error: {str(e)}")
-            self.load_finished.emit(False, f"Error loading model: {str(e)}", None, None)
-    
-    def stop(self):
-        """Stop the loading thread"""
-        self.is_stopped = True
+            self.load_finished.emit(False, str(e), None, None)
 
 
 class ModelSelectionTab(QWidget):
     """Tab for selecting and loading models"""
     
     # Signals
-    model_loaded = pyqtSignal(str, object, object)  # model_name, tokenizer, model
+    model_loaded = pyqtSignal(str, object, object)  # model_id, tokenizer, model
     model_unloaded = pyqtSignal()
     
     def __init__(self, model_manager, parent=None):
@@ -75,6 +142,7 @@ class ModelSelectionTab(QWidget):
         
         self.model_manager = model_manager
         self.load_thread = None
+        self.download_thread = None
         
         # Initialize UI
         self.init_ui()
@@ -155,7 +223,7 @@ class ModelSelectionTab(QWidget):
         model_group.setLayout(model_layout)
         layout.addWidget(model_group)
         
-        # Load/Unload actions
+        # Load/Unload/Download actions
         actions_layout = QHBoxLayout()
         
         # Load button
@@ -168,6 +236,17 @@ class ModelSelectionTab(QWidget):
         self.unload_button.clicked.connect(self.unload_model)
         self.unload_button.setEnabled(False)  # Disabled until a model is loaded
         actions_layout.addWidget(self.unload_button)
+        
+        # Add Download Model button
+        self.download_button = QPushButton("Download Model")
+        self.download_button.clicked.connect(self.download_model)
+        actions_layout.addWidget(self.download_button)
+        
+        # Add Stop Download button
+        self.stop_button = QPushButton("Stop Download")
+        self.stop_button.clicked.connect(self.stop_download)
+        self.stop_button.setEnabled(False)  # Disabled until a download is in progress
+        actions_layout.addWidget(self.stop_button)
         
         layout.addLayout(actions_layout)
         
@@ -209,6 +288,99 @@ class ModelSelectionTab(QWidget):
         # Load saved token if available
         self.load_saved_token()
     
+    def download_model(self):
+        """Download the selected model"""
+        # Get model ID
+        model_id = self.model_combo.currentText().strip()
+        
+        if not model_id:
+            QMessageBox.warning(
+                self,
+                "Invalid Model ID",
+                "Please enter a valid model ID or select one from the list."
+            )
+            return
+        
+        # Get token (optional)
+        token = self.token_input.text().strip() or None
+        
+        # Choose download directory
+        download_path = QFileDialog.getExistingDirectory(
+            self,
+            "Select Download Directory",
+            os.path.expanduser("~")
+        )
+        
+        if not download_path:
+            return
+        
+        # Confirm download
+        confirm = QMessageBox.question(
+            self,
+            "Confirm Download",
+            f"Do you want to download the model '{model_id}' to {download_path}?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        
+        if confirm == QMessageBox.No:
+            return
+        
+        # Disable UI during download
+        self.set_ui_downloading(True)
+        
+        # Create and start download thread
+        self.download_thread = ModelDownloadThread(
+            model_id, 
+            download_path, 
+            token, 
+            self
+        )
+        
+        # Connect signals
+        self.download_thread.progress_updated.connect(self.update_progress)
+        self.download_thread.status_updated.connect(self.update_status)
+        self.download_thread.download_finished.connect(self.handle_download_result)
+        
+        # Start download
+        self.download_thread.start()
+    
+    def set_ui_downloading(self, is_downloading):
+        """Enable/disable UI elements during downloading"""
+        self.download_button.setEnabled(not is_downloading)
+        self.model_combo.setEnabled(not is_downloading)
+        self.token_input.setEnabled(not is_downloading)
+        self.load_button.setEnabled(not is_downloading)
+        
+        # If downloading starts, enable stop button
+        if is_downloading:
+            self.stop_button.setEnabled(True)
+    
+    def handle_download_result(self, success, message):
+        """Handle the result of model download"""
+        # Re-enable UI
+        self.set_ui_downloading(False)
+        
+        if success:
+            QMessageBox.information(
+                self,
+                "Download Successful",
+                f"Model downloaded successfully.\n\n{message}"
+            )
+            self.status_label.setText("Model download complete")
+        else:
+            QMessageBox.critical(
+                self,
+                "Download Failed",
+                f"Failed to download model: {message}"
+            )
+            self.status_label.setText("Model download failed")
+    
+    def stop_download(self):
+        """Stop ongoing model download"""
+        if self.download_thread and self.download_thread.isRunning():
+            self.download_thread.stop()
+            self.status_label.setText("Download stopped by user")
     def load_saved_token(self):
         """Load saved token from settings"""
         try:

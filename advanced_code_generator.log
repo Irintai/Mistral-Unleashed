@@ -97,3 +97,459 @@
 2025-03-23 19:10:14,505 - accelerate.utils.modeling - INFO - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
 2025-03-23 19:10:16,710 - accelerate.utils.modeling - WARNING - Some weights of the model checkpoint at C:\Users\drews\.cache\huggingface\hub\models--TheBloke--Llama-2-7B-Chat-GPTQ\snapshots\d5ad9310836dd91b6ac6133e2e47f47394386cea\model.safetensors were not used when initializing LlamaForCausalLM: {'model.layers.10.self_attn.rotary_emb.inv_freq', 'model.layers.11.self_attn.rotary_emb.inv_freq', 'model.layers.24.self_attn.rotary_emb.inv_freq', 'model.layers.25.self_attn.rotary_emb.inv_freq', 'model.layers.8.self_attn.rotary_emb.inv_freq', 'model.layers.0.self_attn.rotary_emb.inv_freq', 'model.layers.14.self_attn.rotary_emb.inv_freq', 'model.layers.1.self_attn.rotary_emb.inv_freq', 'model.layers.5.self_attn.rotary_emb.inv_freq', 'model.layers.30.self_attn.rotary_emb.inv_freq', 'model.layers.2.self_attn.rotary_emb.inv_freq', 'model.layers.17.self_attn.rotary_emb.inv_freq', 'model.layers.16.self_attn.rotary_emb.inv_freq', 'model.layers.7.self_attn.rotary_emb.inv_freq', 'model.layers.12.self_attn.rotary_emb.inv_freq', 'model.layers.3.self_attn.rotary_emb.inv_freq', 'model.layers.4.self_attn.rotary_emb.inv_freq', 'model.layers.13.self_attn.rotary_emb.inv_freq', 'model.layers.6.self_attn.rotary_emb.inv_freq', 'model.layers.20.self_attn.rotary_emb.inv_freq', 'model.layers.26.self_attn.rotary_emb.inv_freq', 'model.layers.18.self_attn.rotary_emb.inv_freq', 'model.layers.21.self_attn.rotary_emb.inv_freq', 'model.layers.19.self_attn.rotary_emb.inv_freq', 'model.layers.23.self_attn.rotary_emb.inv_freq', 'model.layers.28.self_attn.rotary_emb.inv_freq', 'model.layers.9.self_attn.rotary_emb.inv_freq', 'model.layers.29.self_attn.rotary_emb.inv_freq', 'model.layers.22.self_attn.rotary_emb.inv_freq', 'model.layers.15.self_attn.rotary_emb.inv_freq', 'model.layers.27.self_attn.rotary_emb.inv_freq', 'model.layers.31.self_attn.rotary_emb.inv_freq'}. This may or may not be an issue - make sure that the checkpoint does not have unnecessary parameters, or that the model definition correctly corresponds to the checkpoint.
 2025-03-23 19:10:16,727 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ loaded successfully
+2025-03-23 19:16:31,322 - run - INFO - Importing main application...
+2025-03-23 19:16:31,333 - run - INFO - Creating main window...
+2025-03-23 19:16:31,334 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:16:31,335 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:16:31,369 - src.gui.conversation_tab - INFO - Loaded 1 conversations
+2025-03-23 19:16:31,384 - app - INFO - Application initialized
+2025-03-23 19:16:31,437 - run - INFO - Application started successfully
+2025-03-23 19:16:39,228 - core.model_manager - INFO - Set quantization: 8-bit=True, 4-bit=False
+2025-03-23 19:16:39,228 - core.model_manager - INFO - Set device map: auto
+2025-03-23 19:16:42,024 - core.model_manager - INFO - Loading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:16:42,343 - datasets - INFO - PyTorch version 2.6.0+cu126 available.
+2025-03-23 19:16:42,344 - datasets - INFO - Disabling Tensorflow because USE_TORCH is set
+2025-03-23 19:16:42,687 - auto_gptq.nn_modules.qlinear.qlinear_cuda - WARNING - CUDA extension not installed.
+2025-03-23 19:16:42,688 - auto_gptq.nn_modules.qlinear.qlinear_cuda_old - WARNING - CUDA extension not installed.
+2025-03-23 19:16:42,698 - core.model_manager - INFO - Using auto_gptq for model loading
+2025-03-23 19:16:42,954 - core.model_manager - INFO - Attempting to load model with standard AutoModelForCausalLM
+2025-03-23 19:16:43,090 - core.model_manager - WARNING - Standard loading failed: 'BitsAndBytesConfig' object has no attribute 'get_loading_attributes'
+2025-03-23 19:16:43,090 - core.model_manager - INFO - Attempting to load GPTQ model with specific loader
+2025-03-23 19:16:43,162 - auto_gptq.modeling._base - WARNING - Exllamav2 kernel is not installed, reset disable_exllamav2 to True. This may because you installed auto_gptq using a pre-build wheel on Windows, in which exllama_kernels are not compiled. To use exllama_kernels to further speedup inference, you can re-install auto_gptq from source.
+2025-03-23 19:16:43,163 - auto_gptq.modeling._base - WARNING - CUDA kernels for auto_gptq are not installed, this will result in very slow inference speed. This may because:
+1. You disabled CUDA extensions compilation by setting BUILD_CUDA_EXT=0 when install auto_gptq from source.
+2. You are using pytorch without CUDA support.
+3. CUDA and nvcc are not installed in your device.
+2025-03-23 19:16:43,540 - auto_gptq.modeling._base - INFO - The layer lm_head is not quantized.
+2025-03-23 19:16:44,153 - accelerate.utils.modeling - INFO - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+2025-03-23 19:16:46,285 - accelerate.utils.modeling - WARNING - Some weights of the model checkpoint at C:\Users\drews\.cache\huggingface\hub\models--TheBloke--Llama-2-7B-Chat-GPTQ\snapshots\d5ad9310836dd91b6ac6133e2e47f47394386cea\model.safetensors were not used when initializing LlamaForCausalLM: {'model.layers.29.self_attn.rotary_emb.inv_freq', 'model.layers.23.self_attn.rotary_emb.inv_freq', 'model.layers.30.self_attn.rotary_emb.inv_freq', 'model.layers.9.self_attn.rotary_emb.inv_freq', 'model.layers.17.self_attn.rotary_emb.inv_freq', 'model.layers.16.self_attn.rotary_emb.inv_freq', 'model.layers.1.self_attn.rotary_emb.inv_freq', 'model.layers.21.self_attn.rotary_emb.inv_freq', 'model.layers.31.self_attn.rotary_emb.inv_freq', 'model.layers.11.self_attn.rotary_emb.inv_freq', 'model.layers.19.self_attn.rotary_emb.inv_freq', 'model.layers.3.self_attn.rotary_emb.inv_freq', 'model.layers.12.self_attn.rotary_emb.inv_freq', 'model.layers.28.self_attn.rotary_emb.inv_freq', 'model.layers.10.self_attn.rotary_emb.inv_freq', 'model.layers.24.self_attn.rotary_emb.inv_freq', 'model.layers.18.self_attn.rotary_emb.inv_freq', 'model.layers.15.self_attn.rotary_emb.inv_freq', 'model.layers.20.self_attn.rotary_emb.inv_freq', 'model.layers.0.self_attn.rotary_emb.inv_freq', 'model.layers.25.self_attn.rotary_emb.inv_freq', 'model.layers.7.self_attn.rotary_emb.inv_freq', 'model.layers.14.self_attn.rotary_emb.inv_freq', 'model.layers.13.self_attn.rotary_emb.inv_freq', 'model.layers.8.self_attn.rotary_emb.inv_freq', 'model.layers.22.self_attn.rotary_emb.inv_freq', 'model.layers.6.self_attn.rotary_emb.inv_freq', 'model.layers.5.self_attn.rotary_emb.inv_freq', 'model.layers.2.self_attn.rotary_emb.inv_freq', 'model.layers.26.self_attn.rotary_emb.inv_freq', 'model.layers.27.self_attn.rotary_emb.inv_freq', 'model.layers.4.self_attn.rotary_emb.inv_freq'}. This may or may not be an issue - make sure that the checkpoint does not have unnecessary parameters, or that the model definition correctly corresponds to the checkpoint.
+2025-03-23 19:16:46,302 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ loaded successfully
+2025-03-23 19:19:21,740 - run - INFO - Importing main application...
+2025-03-23 19:19:21,751 - run - INFO - Creating main window...
+2025-03-23 19:19:21,752 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:19:21,753 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:19:21,792 - src.gui.conversation_tab - INFO - Loaded 1 conversations
+2025-03-23 19:19:21,809 - app - INFO - Application initialized
+2025-03-23 19:19:21,862 - run - INFO - Application started successfully
+2025-03-23 19:19:29,668 - core.model_manager - INFO - Set quantization: 8-bit=False, 4-bit=True
+2025-03-23 19:19:29,668 - core.model_manager - INFO - Set device map: auto
+2025-03-23 19:19:32,490 - core.model_manager - INFO - Loading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:19:32,809 - datasets - INFO - PyTorch version 2.6.0+cu126 available.
+2025-03-23 19:19:32,811 - datasets - INFO - Disabling Tensorflow because USE_TORCH is set
+2025-03-23 19:19:33,151 - auto_gptq.nn_modules.qlinear.qlinear_cuda - WARNING - CUDA extension not installed.
+2025-03-23 19:19:33,152 - auto_gptq.nn_modules.qlinear.qlinear_cuda_old - WARNING - CUDA extension not installed.
+2025-03-23 19:19:33,163 - core.model_manager - INFO - Using auto_gptq for model loading
+2025-03-23 19:19:33,432 - core.model_manager - INFO - Attempting to load model with standard AutoModelForCausalLM
+2025-03-23 19:19:33,571 - core.model_manager - WARNING - Standard loading failed: 'BitsAndBytesConfig' object has no attribute 'get_loading_attributes'
+2025-03-23 19:19:33,571 - core.model_manager - INFO - Attempting to load GPTQ model with specific loader
+2025-03-23 19:19:33,997 - auto_gptq.modeling._base - WARNING - Exllamav2 kernel is not installed, reset disable_exllamav2 to True. This may because you installed auto_gptq using a pre-build wheel on Windows, in which exllama_kernels are not compiled. To use exllama_kernels to further speedup inference, you can re-install auto_gptq from source.
+2025-03-23 19:19:33,998 - auto_gptq.modeling._base - WARNING - CUDA kernels for auto_gptq are not installed, this will result in very slow inference speed. This may because:
+1. You disabled CUDA extensions compilation by setting BUILD_CUDA_EXT=0 when install auto_gptq from source.
+2. You are using pytorch without CUDA support.
+3. CUDA and nvcc are not installed in your device.
+2025-03-23 19:19:34,333 - auto_gptq.modeling._base - INFO - The layer lm_head is not quantized.
+2025-03-23 19:19:34,927 - accelerate.utils.modeling - INFO - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+2025-03-23 19:19:37,101 - accelerate.utils.modeling - WARNING - Some weights of the model checkpoint at C:\Users\drews\.cache\huggingface\hub\models--TheBloke--Llama-2-7B-Chat-GPTQ\snapshots\d5ad9310836dd91b6ac6133e2e47f47394386cea\model.safetensors were not used when initializing LlamaForCausalLM: {'model.layers.29.self_attn.rotary_emb.inv_freq', 'model.layers.3.self_attn.rotary_emb.inv_freq', 'model.layers.13.self_attn.rotary_emb.inv_freq', 'model.layers.12.self_attn.rotary_emb.inv_freq', 'model.layers.5.self_attn.rotary_emb.inv_freq', 'model.layers.7.self_attn.rotary_emb.inv_freq', 'model.layers.8.self_attn.rotary_emb.inv_freq', 'model.layers.11.self_attn.rotary_emb.inv_freq', 'model.layers.6.self_attn.rotary_emb.inv_freq', 'model.layers.4.self_attn.rotary_emb.inv_freq', 'model.layers.2.self_attn.rotary_emb.inv_freq', 'model.layers.23.self_attn.rotary_emb.inv_freq', 'model.layers.28.self_attn.rotary_emb.inv_freq', 'model.layers.31.self_attn.rotary_emb.inv_freq', 'model.layers.15.self_attn.rotary_emb.inv_freq', 'model.layers.0.self_attn.rotary_emb.inv_freq', 'model.layers.17.self_attn.rotary_emb.inv_freq', 'model.layers.16.self_attn.rotary_emb.inv_freq', 'model.layers.30.self_attn.rotary_emb.inv_freq', 'model.layers.24.self_attn.rotary_emb.inv_freq', 'model.layers.1.self_attn.rotary_emb.inv_freq', 'model.layers.14.self_attn.rotary_emb.inv_freq', 'model.layers.27.self_attn.rotary_emb.inv_freq', 'model.layers.26.self_attn.rotary_emb.inv_freq', 'model.layers.25.self_attn.rotary_emb.inv_freq', 'model.layers.21.self_attn.rotary_emb.inv_freq', 'model.layers.9.self_attn.rotary_emb.inv_freq', 'model.layers.20.self_attn.rotary_emb.inv_freq', 'model.layers.19.self_attn.rotary_emb.inv_freq', 'model.layers.22.self_attn.rotary_emb.inv_freq', 'model.layers.10.self_attn.rotary_emb.inv_freq', 'model.layers.18.self_attn.rotary_emb.inv_freq'}. This may or may not be an issue - make sure that the checkpoint does not have unnecessary parameters, or that the model definition correctly corresponds to the checkpoint.
+2025-03-23 19:19:37,117 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ loaded successfully
+2025-03-23 19:19:53,286 - src.gui.conversation_tab - ERROR - Error generating response: BaseGPTQForCausalLM.generate() takes 1 positional argument but 2 were given
+2025-03-23 19:22:19,706 - run - INFO - Importing main application...
+2025-03-23 19:22:19,717 - run - INFO - Creating main window...
+2025-03-23 19:22:19,718 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:22:19,719 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:22:19,757 - src.gui.conversation_tab - INFO - Loaded 1 conversations
+2025-03-23 19:22:19,776 - app - INFO - Application initialized
+2025-03-23 19:22:19,831 - run - INFO - Application started successfully
+2025-03-23 19:22:25,672 - core.model_manager - INFO - Set quantization: 8-bit=False, 4-bit=True
+2025-03-23 19:22:25,672 - core.model_manager - INFO - Set device map: auto
+2025-03-23 19:22:28,489 - core.model_manager - INFO - Loading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:22:28,811 - datasets - INFO - PyTorch version 2.6.0+cu126 available.
+2025-03-23 19:22:28,813 - datasets - INFO - Disabling Tensorflow because USE_TORCH is set
+2025-03-23 19:22:29,158 - auto_gptq.nn_modules.qlinear.qlinear_cuda - WARNING - CUDA extension not installed.
+2025-03-23 19:22:29,161 - auto_gptq.nn_modules.qlinear.qlinear_cuda_old - WARNING - CUDA extension not installed.
+2025-03-23 19:22:29,169 - core.model_manager - INFO - Using auto_gptq for model loading
+2025-03-23 19:22:29,508 - core.model_manager - INFO - Attempting to load model with standard AutoModelForCausalLM
+2025-03-23 19:22:29,663 - core.model_manager - WARNING - Standard loading failed: 'BitsAndBytesConfig' object has no attribute 'get_loading_attributes'
+2025-03-23 19:22:29,664 - core.model_manager - INFO - Attempting to load GPTQ model with specific loader
+2025-03-23 19:22:30,395 - auto_gptq.modeling._base - WARNING - Exllamav2 kernel is not installed, reset disable_exllamav2 to True. This may because you installed auto_gptq using a pre-build wheel on Windows, in which exllama_kernels are not compiled. To use exllama_kernels to further speedup inference, you can re-install auto_gptq from source.
+2025-03-23 19:22:30,397 - auto_gptq.modeling._base - WARNING - CUDA kernels for auto_gptq are not installed, this will result in very slow inference speed. This may because:
+1. You disabled CUDA extensions compilation by setting BUILD_CUDA_EXT=0 when install auto_gptq from source.
+2. You are using pytorch without CUDA support.
+3. CUDA and nvcc are not installed in your device.
+2025-03-23 19:22:30,764 - auto_gptq.modeling._base - INFO - The layer lm_head is not quantized.
+2025-03-23 19:22:31,350 - accelerate.utils.modeling - INFO - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+2025-03-23 19:22:33,621 - accelerate.utils.modeling - WARNING - Some weights of the model checkpoint at C:\Users\drews\.cache\huggingface\hub\models--TheBloke--Llama-2-7B-Chat-GPTQ\snapshots\d5ad9310836dd91b6ac6133e2e47f47394386cea\model.safetensors were not used when initializing LlamaForCausalLM: {'model.layers.26.self_attn.rotary_emb.inv_freq', 'model.layers.30.self_attn.rotary_emb.inv_freq', 'model.layers.15.self_attn.rotary_emb.inv_freq', 'model.layers.6.self_attn.rotary_emb.inv_freq', 'model.layers.8.self_attn.rotary_emb.inv_freq', 'model.layers.27.self_attn.rotary_emb.inv_freq', 'model.layers.3.self_attn.rotary_emb.inv_freq', 'model.layers.22.self_attn.rotary_emb.inv_freq', 'model.layers.20.self_attn.rotary_emb.inv_freq', 'model.layers.29.self_attn.rotary_emb.inv_freq', 'model.layers.14.self_attn.rotary_emb.inv_freq', 'model.layers.13.self_attn.rotary_emb.inv_freq', 'model.layers.10.self_attn.rotary_emb.inv_freq', 'model.layers.19.self_attn.rotary_emb.inv_freq', 'model.layers.7.self_attn.rotary_emb.inv_freq', 'model.layers.5.self_attn.rotary_emb.inv_freq', 'model.layers.17.self_attn.rotary_emb.inv_freq', 'model.layers.16.self_attn.rotary_emb.inv_freq', 'model.layers.25.self_attn.rotary_emb.inv_freq', 'model.layers.18.self_attn.rotary_emb.inv_freq', 'model.layers.11.self_attn.rotary_emb.inv_freq', 'model.layers.31.self_attn.rotary_emb.inv_freq', 'model.layers.23.self_attn.rotary_emb.inv_freq', 'model.layers.1.self_attn.rotary_emb.inv_freq', 'model.layers.9.self_attn.rotary_emb.inv_freq', 'model.layers.12.self_attn.rotary_emb.inv_freq', 'model.layers.0.self_attn.rotary_emb.inv_freq', 'model.layers.4.self_attn.rotary_emb.inv_freq', 'model.layers.2.self_attn.rotary_emb.inv_freq', 'model.layers.24.self_attn.rotary_emb.inv_freq', 'model.layers.28.self_attn.rotary_emb.inv_freq', 'model.layers.21.self_attn.rotary_emb.inv_freq'}. This may or may not be an issue - make sure that the checkpoint does not have unnecessary parameters, or that the model definition correctly corresponds to the checkpoint.
+2025-03-23 19:22:33,639 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ loaded successfully
+2025-03-23 19:22:49,849 - src.gui.conversation_tab - ERROR - Error generating response: BaseGPTQForCausalLM.generate() takes 1 positional argument but 2 were given
+2025-03-23 19:24:12,058 - run - INFO - Importing main application...
+2025-03-23 19:24:12,069 - run - INFO - Creating main window...
+2025-03-23 19:24:12,070 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:24:12,071 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:24:12,111 - src.gui.conversation_tab - INFO - Loaded 1 conversations
+2025-03-23 19:24:12,129 - app - INFO - Application initialized
+2025-03-23 19:24:12,185 - run - INFO - Application started successfully
+2025-03-23 19:24:17,043 - core.model_manager - INFO - Set quantization: 8-bit=False, 4-bit=True
+2025-03-23 19:24:17,044 - core.model_manager - INFO - Set device map: auto
+2025-03-23 19:24:19,813 - core.model_manager - INFO - Loading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:24:20,130 - datasets - INFO - PyTorch version 2.6.0+cu126 available.
+2025-03-23 19:24:20,132 - datasets - INFO - Disabling Tensorflow because USE_TORCH is set
+2025-03-23 19:24:20,468 - auto_gptq.nn_modules.qlinear.qlinear_cuda - WARNING - CUDA extension not installed.
+2025-03-23 19:24:20,469 - auto_gptq.nn_modules.qlinear.qlinear_cuda_old - WARNING - CUDA extension not installed.
+2025-03-23 19:24:20,479 - core.model_manager - INFO - Using auto_gptq for model loading
+2025-03-23 19:24:20,777 - core.model_manager - INFO - Attempting to load model with standard AutoModelForCausalLM
+2025-03-23 19:24:21,375 - core.model_manager - WARNING - Standard loading failed: 'BitsAndBytesConfig' object has no attribute 'get_loading_attributes'
+2025-03-23 19:24:21,376 - core.model_manager - INFO - Attempting to load GPTQ model with specific loader
+2025-03-23 19:24:21,550 - auto_gptq.modeling._base - WARNING - Exllamav2 kernel is not installed, reset disable_exllamav2 to True. This may because you installed auto_gptq using a pre-build wheel on Windows, in which exllama_kernels are not compiled. To use exllama_kernels to further speedup inference, you can re-install auto_gptq from source.
+2025-03-23 19:24:21,552 - auto_gptq.modeling._base - WARNING - CUDA kernels for auto_gptq are not installed, this will result in very slow inference speed. This may because:
+1. You disabled CUDA extensions compilation by setting BUILD_CUDA_EXT=0 when install auto_gptq from source.
+2. You are using pytorch without CUDA support.
+3. CUDA and nvcc are not installed in your device.
+2025-03-23 19:24:21,888 - auto_gptq.modeling._base - INFO - The layer lm_head is not quantized.
+2025-03-23 19:24:22,455 - accelerate.utils.modeling - INFO - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+2025-03-23 19:24:24,748 - accelerate.utils.modeling - WARNING - Some weights of the model checkpoint at C:\Users\drews\.cache\huggingface\hub\models--TheBloke--Llama-2-7B-Chat-GPTQ\snapshots\d5ad9310836dd91b6ac6133e2e47f47394386cea\model.safetensors were not used when initializing LlamaForCausalLM: {'model.layers.19.self_attn.rotary_emb.inv_freq', 'model.layers.14.self_attn.rotary_emb.inv_freq', 'model.layers.21.self_attn.rotary_emb.inv_freq', 'model.layers.29.self_attn.rotary_emb.inv_freq', 'model.layers.8.self_attn.rotary_emb.inv_freq', 'model.layers.31.self_attn.rotary_emb.inv_freq', 'model.layers.12.self_attn.rotary_emb.inv_freq', 'model.layers.15.self_attn.rotary_emb.inv_freq', 'model.layers.17.self_attn.rotary_emb.inv_freq', 'model.layers.6.self_attn.rotary_emb.inv_freq', 'model.layers.30.self_attn.rotary_emb.inv_freq', 'model.layers.28.self_attn.rotary_emb.inv_freq', 'model.layers.5.self_attn.rotary_emb.inv_freq', 'model.layers.20.self_attn.rotary_emb.inv_freq', 'model.layers.13.self_attn.rotary_emb.inv_freq', 'model.layers.0.self_attn.rotary_emb.inv_freq', 'model.layers.2.self_attn.rotary_emb.inv_freq', 'model.layers.24.self_attn.rotary_emb.inv_freq', 'model.layers.16.self_attn.rotary_emb.inv_freq', 'model.layers.1.self_attn.rotary_emb.inv_freq', 'model.layers.11.self_attn.rotary_emb.inv_freq', 'model.layers.3.self_attn.rotary_emb.inv_freq', 'model.layers.23.self_attn.rotary_emb.inv_freq', 'model.layers.25.self_attn.rotary_emb.inv_freq', 'model.layers.9.self_attn.rotary_emb.inv_freq', 'model.layers.18.self_attn.rotary_emb.inv_freq', 'model.layers.10.self_attn.rotary_emb.inv_freq', 'model.layers.27.self_attn.rotary_emb.inv_freq', 'model.layers.26.self_attn.rotary_emb.inv_freq', 'model.layers.22.self_attn.rotary_emb.inv_freq', 'model.layers.4.self_attn.rotary_emb.inv_freq', 'model.layers.7.self_attn.rotary_emb.inv_freq'}. This may or may not be an issue - make sure that the checkpoint does not have unnecessary parameters, or that the model definition correctly corresponds to the checkpoint.
+2025-03-23 19:24:24,766 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ loaded successfully
+2025-03-23 19:24:33,802 - src.gui.conversation_tab - ERROR - Error generating response: BaseGPTQForCausalLM.generate() takes 1 positional argument but 2 were given
+2025-03-23 19:24:43,955 - core.settings - INFO - Settings saved to QSettings
+2025-03-23 19:24:43,955 - app - INFO - Settings saved on exit
+2025-03-23 19:24:43,955 - core.model_manager - INFO - Unloading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:24:44,041 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ unloaded successfully
+2025-03-23 19:24:44,128 - app - INFO - Models unloaded on exit
+2025-03-23 19:25:06,796 - run - INFO - Importing main application...
+2025-03-23 19:25:06,803 - run - INFO - Creating main window...
+2025-03-23 19:25:06,804 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:25:06,805 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:25:06,842 - src.gui.conversation_tab - INFO - Loaded 1 conversations
+2025-03-23 19:25:06,862 - app - INFO - Application initialized
+2025-03-23 19:25:06,917 - run - INFO - Application started successfully
+2025-03-23 19:25:14,892 - core.model_manager - INFO - Set quantization: 8-bit=False, 4-bit=True
+2025-03-23 19:25:14,893 - core.model_manager - INFO - Set device map: auto
+2025-03-23 19:25:17,716 - core.model_manager - INFO - Loading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:25:18,045 - datasets - INFO - PyTorch version 2.6.0+cu126 available.
+2025-03-23 19:25:18,046 - datasets - INFO - Disabling Tensorflow because USE_TORCH is set
+2025-03-23 19:25:18,393 - auto_gptq.nn_modules.qlinear.qlinear_cuda - WARNING - CUDA extension not installed.
+2025-03-23 19:25:18,395 - auto_gptq.nn_modules.qlinear.qlinear_cuda_old - WARNING - CUDA extension not installed.
+2025-03-23 19:25:18,404 - core.model_manager - INFO - Using auto_gptq for model loading
+2025-03-23 19:25:18,687 - core.model_manager - INFO - Attempting to load model with standard AutoModelForCausalLM
+2025-03-23 19:25:18,826 - core.model_manager - WARNING - Standard loading failed: 'BitsAndBytesConfig' object has no attribute 'get_loading_attributes'
+2025-03-23 19:25:18,827 - core.model_manager - INFO - Attempting to load GPTQ model with specific loader
+2025-03-23 19:25:18,900 - auto_gptq.modeling._base - WARNING - Exllamav2 kernel is not installed, reset disable_exllamav2 to True. This may because you installed auto_gptq using a pre-build wheel on Windows, in which exllama_kernels are not compiled. To use exllama_kernels to further speedup inference, you can re-install auto_gptq from source.
+2025-03-23 19:25:18,901 - auto_gptq.modeling._base - WARNING - CUDA kernels for auto_gptq are not installed, this will result in very slow inference speed. This may because:
+1. You disabled CUDA extensions compilation by setting BUILD_CUDA_EXT=0 when install auto_gptq from source.
+2. You are using pytorch without CUDA support.
+3. CUDA and nvcc are not installed in your device.
+2025-03-23 19:25:19,237 - auto_gptq.modeling._base - INFO - The layer lm_head is not quantized.
+2025-03-23 19:25:19,794 - accelerate.utils.modeling - INFO - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+2025-03-23 19:25:21,974 - accelerate.utils.modeling - WARNING - Some weights of the model checkpoint at C:\Users\drews\.cache\huggingface\hub\models--TheBloke--Llama-2-7B-Chat-GPTQ\snapshots\d5ad9310836dd91b6ac6133e2e47f47394386cea\model.safetensors were not used when initializing LlamaForCausalLM: {'model.layers.6.self_attn.rotary_emb.inv_freq', 'model.layers.20.self_attn.rotary_emb.inv_freq', 'model.layers.22.self_attn.rotary_emb.inv_freq', 'model.layers.9.self_attn.rotary_emb.inv_freq', 'model.layers.3.self_attn.rotary_emb.inv_freq', 'model.layers.29.self_attn.rotary_emb.inv_freq', 'model.layers.7.self_attn.rotary_emb.inv_freq', 'model.layers.5.self_attn.rotary_emb.inv_freq', 'model.layers.18.self_attn.rotary_emb.inv_freq', 'model.layers.26.self_attn.rotary_emb.inv_freq', 'model.layers.15.self_attn.rotary_emb.inv_freq', 'model.layers.31.self_attn.rotary_emb.inv_freq', 'model.layers.0.self_attn.rotary_emb.inv_freq', 'model.layers.28.self_attn.rotary_emb.inv_freq', 'model.layers.2.self_attn.rotary_emb.inv_freq', 'model.layers.8.self_attn.rotary_emb.inv_freq', 'model.layers.12.self_attn.rotary_emb.inv_freq', 'model.layers.1.self_attn.rotary_emb.inv_freq', 'model.layers.11.self_attn.rotary_emb.inv_freq', 'model.layers.17.self_attn.rotary_emb.inv_freq', 'model.layers.23.self_attn.rotary_emb.inv_freq', 'model.layers.10.self_attn.rotary_emb.inv_freq', 'model.layers.16.self_attn.rotary_emb.inv_freq', 'model.layers.21.self_attn.rotary_emb.inv_freq', 'model.layers.4.self_attn.rotary_emb.inv_freq', 'model.layers.19.self_attn.rotary_emb.inv_freq', 'model.layers.24.self_attn.rotary_emb.inv_freq', 'model.layers.14.self_attn.rotary_emb.inv_freq', 'model.layers.27.self_attn.rotary_emb.inv_freq', 'model.layers.30.self_attn.rotary_emb.inv_freq', 'model.layers.25.self_attn.rotary_emb.inv_freq', 'model.layers.13.self_attn.rotary_emb.inv_freq'}. This may or may not be an issue - make sure that the checkpoint does not have unnecessary parameters, or that the model definition correctly corresponds to the checkpoint.
+2025-03-23 19:25:21,992 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ loaded successfully
+2025-03-23 19:25:28,971 - src.gui.conversation_tab - ERROR - Error generating response: BaseGPTQForCausalLM.generate() takes 1 positional argument but 2 were given
+2025-03-23 19:26:23,414 - core.settings - INFO - Settings saved to QSettings
+2025-03-23 19:26:23,414 - app - INFO - Settings saved on exit
+2025-03-23 19:26:23,414 - core.model_manager - INFO - Unloading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:26:23,507 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ unloaded successfully
+2025-03-23 19:26:23,600 - app - INFO - Models unloaded on exit
+2025-03-23 19:26:29,537 - run - INFO - Importing main application...
+2025-03-23 19:26:29,549 - run - INFO - Creating main window...
+2025-03-23 19:26:29,550 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:26:29,551 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:26:29,597 - src.gui.conversation_tab - INFO - Loaded 1 conversations
+2025-03-23 19:26:29,619 - app - INFO - Application initialized
+2025-03-23 19:26:29,677 - run - INFO - Application started successfully
+2025-03-23 19:26:36,866 - core.model_manager - INFO - Set quantization: 8-bit=False, 4-bit=True
+2025-03-23 19:26:36,867 - core.model_manager - INFO - Set device map: auto
+2025-03-23 19:26:39,633 - core.model_manager - INFO - Loading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:26:39,954 - datasets - INFO - PyTorch version 2.6.0+cu126 available.
+2025-03-23 19:26:39,955 - datasets - INFO - Disabling Tensorflow because USE_TORCH is set
+2025-03-23 19:26:40,301 - auto_gptq.nn_modules.qlinear.qlinear_cuda - WARNING - CUDA extension not installed.
+2025-03-23 19:26:40,303 - auto_gptq.nn_modules.qlinear.qlinear_cuda_old - WARNING - CUDA extension not installed.
+2025-03-23 19:26:40,313 - core.model_manager - INFO - Using auto_gptq for model loading
+2025-03-23 19:26:40,625 - core.model_manager - INFO - Attempting to load model with standard AutoModelForCausalLM
+2025-03-23 19:26:40,800 - core.model_manager - WARNING - Standard loading failed: 'BitsAndBytesConfig' object has no attribute 'get_loading_attributes'
+2025-03-23 19:26:40,800 - core.model_manager - INFO - Attempting to load GPTQ model with specific loader
+2025-03-23 19:26:40,873 - auto_gptq.modeling._base - WARNING - Exllamav2 kernel is not installed, reset disable_exllamav2 to True. This may because you installed auto_gptq using a pre-build wheel on Windows, in which exllama_kernels are not compiled. To use exllama_kernels to further speedup inference, you can re-install auto_gptq from source.
+2025-03-23 19:26:40,874 - auto_gptq.modeling._base - WARNING - CUDA kernels for auto_gptq are not installed, this will result in very slow inference speed. This may because:
+1. You disabled CUDA extensions compilation by setting BUILD_CUDA_EXT=0 when install auto_gptq from source.
+2. You are using pytorch without CUDA support.
+3. CUDA and nvcc are not installed in your device.
+2025-03-23 19:26:41,217 - auto_gptq.modeling._base - INFO - The layer lm_head is not quantized.
+2025-03-23 19:26:41,810 - accelerate.utils.modeling - INFO - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+2025-03-23 19:26:44,094 - accelerate.utils.modeling - WARNING - Some weights of the model checkpoint at C:\Users\drews\.cache\huggingface\hub\models--TheBloke--Llama-2-7B-Chat-GPTQ\snapshots\d5ad9310836dd91b6ac6133e2e47f47394386cea\model.safetensors were not used when initializing LlamaForCausalLM: {'model.layers.16.self_attn.rotary_emb.inv_freq', 'model.layers.19.self_attn.rotary_emb.inv_freq', 'model.layers.27.self_attn.rotary_emb.inv_freq', 'model.layers.12.self_attn.rotary_emb.inv_freq', 'model.layers.6.self_attn.rotary_emb.inv_freq', 'model.layers.25.self_attn.rotary_emb.inv_freq', 'model.layers.2.self_attn.rotary_emb.inv_freq', 'model.layers.9.self_attn.rotary_emb.inv_freq', 'model.layers.14.self_attn.rotary_emb.inv_freq', 'model.layers.23.self_attn.rotary_emb.inv_freq', 'model.layers.31.self_attn.rotary_emb.inv_freq', 'model.layers.17.self_attn.rotary_emb.inv_freq', 'model.layers.21.self_attn.rotary_emb.inv_freq', 'model.layers.0.self_attn.rotary_emb.inv_freq', 'model.layers.15.self_attn.rotary_emb.inv_freq', 'model.layers.5.self_attn.rotary_emb.inv_freq', 'model.layers.11.self_attn.rotary_emb.inv_freq', 'model.layers.20.self_attn.rotary_emb.inv_freq', 'model.layers.7.self_attn.rotary_emb.inv_freq', 'model.layers.1.self_attn.rotary_emb.inv_freq', 'model.layers.22.self_attn.rotary_emb.inv_freq', 'model.layers.4.self_attn.rotary_emb.inv_freq', 'model.layers.8.self_attn.rotary_emb.inv_freq', 'model.layers.24.self_attn.rotary_emb.inv_freq', 'model.layers.13.self_attn.rotary_emb.inv_freq', 'model.layers.29.self_attn.rotary_emb.inv_freq', 'model.layers.26.self_attn.rotary_emb.inv_freq', 'model.layers.18.self_attn.rotary_emb.inv_freq', 'model.layers.10.self_attn.rotary_emb.inv_freq', 'model.layers.30.self_attn.rotary_emb.inv_freq', 'model.layers.28.self_attn.rotary_emb.inv_freq', 'model.layers.3.self_attn.rotary_emb.inv_freq'}. This may or may not be an issue - make sure that the checkpoint does not have unnecessary parameters, or that the model definition correctly corresponds to the checkpoint.
+2025-03-23 19:26:44,112 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ loaded successfully
+2025-03-23 19:26:53,105 - src.gui.conversation_tab - ERROR - Error generating response: BaseGPTQForCausalLM.generate() takes 1 positional argument but 2 were given
+2025-03-23 19:30:33,348 - run - INFO - Importing main application...
+2025-03-23 19:30:33,360 - run - INFO - Creating main window...
+2025-03-23 19:30:33,361 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:30:33,362 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:30:33,412 - src.gui.conversation_tab - INFO - Loaded 2 conversations
+2025-03-23 19:30:33,430 - src.app - INFO - Application initialized
+2025-03-23 19:30:33,482 - run - INFO - Application started successfully
+2025-03-23 19:30:42,900 - core.model_manager - INFO - Set quantization: 8-bit=False, 4-bit=True
+2025-03-23 19:30:42,901 - core.model_manager - INFO - Set device map: auto
+2025-03-23 19:30:57,830 - core.model_manager - INFO - Loading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:30:59,572 - datasets - INFO - PyTorch version 2.6.0+cu126 available.
+2025-03-23 19:30:59,573 - datasets - INFO - Disabling Tensorflow because USE_TORCH is set
+2025-03-23 19:31:00,641 - auto_gptq.nn_modules.qlinear.qlinear_cuda - WARNING - CUDA extension not installed.
+2025-03-23 19:31:00,643 - auto_gptq.nn_modules.qlinear.qlinear_cuda_old - WARNING - CUDA extension not installed.
+2025-03-23 19:31:00,653 - core.model_manager - INFO - Using auto_gptq for model loading
+2025-03-23 19:31:00,968 - core.model_manager - INFO - Attempting to load model with standard AutoModelForCausalLM
+2025-03-23 19:31:01,117 - core.model_manager - WARNING - Standard loading failed: 'BitsAndBytesConfig' object has no attribute 'get_loading_attributes'
+2025-03-23 19:31:01,117 - core.model_manager - INFO - Attempting to load GPTQ model with specific loader
+2025-03-23 19:31:01,200 - auto_gptq.modeling._base - WARNING - Exllamav2 kernel is not installed, reset disable_exllamav2 to True. This may because you installed auto_gptq using a pre-build wheel on Windows, in which exllama_kernels are not compiled. To use exllama_kernels to further speedup inference, you can re-install auto_gptq from source.
+2025-03-23 19:31:01,201 - auto_gptq.modeling._base - WARNING - CUDA kernels for auto_gptq are not installed, this will result in very slow inference speed. This may because:
+1. You disabled CUDA extensions compilation by setting BUILD_CUDA_EXT=0 when install auto_gptq from source.
+2. You are using pytorch without CUDA support.
+3. CUDA and nvcc are not installed in your device.
+2025-03-23 19:31:03,296 - auto_gptq.modeling._base - INFO - The layer lm_head is not quantized.
+2025-03-23 19:31:05,578 - accelerate.utils.modeling - INFO - We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+2025-03-23 19:31:11,989 - accelerate.utils.modeling - WARNING - Some weights of the model checkpoint at C:\Users\drews\.cache\huggingface\hub\models--TheBloke--Llama-2-7B-Chat-GPTQ\snapshots\d5ad9310836dd91b6ac6133e2e47f47394386cea\model.safetensors were not used when initializing LlamaForCausalLM: {'model.layers.12.self_attn.rotary_emb.inv_freq', 'model.layers.1.self_attn.rotary_emb.inv_freq', 'model.layers.21.self_attn.rotary_emb.inv_freq', 'model.layers.29.self_attn.rotary_emb.inv_freq', 'model.layers.4.self_attn.rotary_emb.inv_freq', 'model.layers.2.self_attn.rotary_emb.inv_freq', 'model.layers.5.self_attn.rotary_emb.inv_freq', 'model.layers.27.self_attn.rotary_emb.inv_freq', 'model.layers.6.self_attn.rotary_emb.inv_freq', 'model.layers.10.self_attn.rotary_emb.inv_freq', 'model.layers.14.self_attn.rotary_emb.inv_freq', 'model.layers.22.self_attn.rotary_emb.inv_freq', 'model.layers.23.self_attn.rotary_emb.inv_freq', 'model.layers.16.self_attn.rotary_emb.inv_freq', 'model.layers.0.self_attn.rotary_emb.inv_freq', 'model.layers.30.self_attn.rotary_emb.inv_freq', 'model.layers.18.self_attn.rotary_emb.inv_freq', 'model.layers.17.self_attn.rotary_emb.inv_freq', 'model.layers.13.self_attn.rotary_emb.inv_freq', 'model.layers.9.self_attn.rotary_emb.inv_freq', 'model.layers.7.self_attn.rotary_emb.inv_freq', 'model.layers.25.self_attn.rotary_emb.inv_freq', 'model.layers.20.self_attn.rotary_emb.inv_freq', 'model.layers.24.self_attn.rotary_emb.inv_freq', 'model.layers.28.self_attn.rotary_emb.inv_freq', 'model.layers.31.self_attn.rotary_emb.inv_freq', 'model.layers.19.self_attn.rotary_emb.inv_freq', 'model.layers.11.self_attn.rotary_emb.inv_freq', 'model.layers.3.self_attn.rotary_emb.inv_freq', 'model.layers.8.self_attn.rotary_emb.inv_freq', 'model.layers.15.self_attn.rotary_emb.inv_freq', 'model.layers.26.self_attn.rotary_emb.inv_freq'}. This may or may not be an issue - make sure that the checkpoint does not have unnecessary parameters, or that the model definition correctly corresponds to the checkpoint.
+2025-03-23 19:31:12,007 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ loaded successfully
+2025-03-23 19:32:20,261 - gui.code_tab - ERROR - Error formatting Python code: Cannot parse: 1:49: UnterscheidungvonverschiedenenVariantendesAlbums.
+2025-03-23 19:32:20,262 - gui.code_tab - WARNING - No history manager found
+2025-03-23 19:34:52,483 - core.settings - INFO - Settings saved to QSettings
+2025-03-23 19:34:52,484 - src.app - INFO - Settings saved on exit
+2025-03-23 19:34:52,484 - core.model_manager - INFO - Unloading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:34:52,581 - core.model_manager - INFO - Model TheBloke/Llama-2-7B-Chat-GPTQ unloaded successfully
+2025-03-23 19:34:52,671 - src.app - INFO - Models unloaded on exit
+2025-03-23 19:59:46,987 - run - INFO - Importing main application...
+2025-03-23 19:59:46,997 - core.model_manager - INFO - Using Transformers native GPTQ support
+2025-03-23 19:59:47,004 - run - INFO - Creating main window...
+2025-03-23 19:59:47,005 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 19:59:47,006 - core.model_manager - INFO - Model manager initialized
+2025-03-23 19:59:47,041 - src.gui.conversation_tab - INFO - Loaded 2 conversations
+2025-03-23 19:59:47,058 - src.app - INFO - Application initialized
+2025-03-23 19:59:47,113 - run - INFO - Application started successfully
+2025-03-23 19:59:53,832 - core.model_manager - INFO - Set quantization: 8-bit=False, 4-bit=True
+2025-03-23 19:59:53,833 - core.model_manager - INFO - Set device map: auto
+2025-03-23 19:59:56,730 - core.model_manager - INFO - Loading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 19:59:57,064 - datasets - INFO - PyTorch version 2.6.0+cu126 available.
+2025-03-23 19:59:57,065 - datasets - INFO - Disabling Tensorflow because USE_TORCH is set
+2025-03-23 19:59:57,483 - auto_gptq.nn_modules.qlinear.qlinear_cuda - WARNING - CUDA extension not installed.
+2025-03-23 19:59:57,484 - auto_gptq.nn_modules.qlinear.qlinear_cuda_old - WARNING - CUDA extension not installed.
+2025-03-23 19:59:57,495 - core.model_manager - INFO - Using auto_gptq for model loading
+2025-03-23 19:59:57,748 - core.model_manager - INFO - Attempting to load model with standard AutoModelForCausalLM
+2025-03-23 19:59:57,905 - core.model_manager - WARNING - Standard loading failed: 'BitsAndBytesConfig' object has no attribute 'get_loading_attributes'
+2025-03-23 19:59:57,905 - core.model_manager - INFO - Loading GPTQ model with native Transformers support
+2025-03-23 19:59:57,978 - core.model_manager - ERROR - Error loading model TheBloke/Llama-2-7B-Chat-GPTQ: You can't pass `load_in_4bit`or `load_in_8bit` as a kwarg when passing `quantization_config` argument at the same time.
+2025-03-23 19:59:58,060 - gui.model_tab - ERROR - Error loading model: You can't pass `load_in_4bit`or `load_in_8bit` as a kwarg when passing `quantization_config` argument at the same time.
+2025-03-23 20:04:32,926 - core.settings - INFO - Settings saved to QSettings
+2025-03-23 20:04:32,926 - src.app - INFO - Settings saved on exit
+2025-03-23 20:04:34,177 - src.app - INFO - Models unloaded on exit
+2025-03-23 20:04:40,322 - run - INFO - Importing main application...
+2025-03-23 20:04:40,332 - core.model_manager - INFO - Using Transformers native GPTQ support
+2025-03-23 20:04:40,338 - run - INFO - Creating main window...
+2025-03-23 20:04:40,339 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 20:04:40,340 - core.model_manager - INFO - Model manager initialized
+2025-03-23 20:04:40,371 - src.gui.conversation_tab - INFO - Loaded 2 conversations
+2025-03-23 20:04:40,389 - src.app - INFO - Application initialized
+2025-03-23 20:04:40,442 - run - INFO - Application started successfully
+2025-03-23 20:04:47,543 - core.model_manager - INFO - Set quantization: 8-bit=True, 4-bit=False
+2025-03-23 20:04:47,543 - core.model_manager - INFO - Set device map: auto
+2025-03-23 20:04:50,397 - core.model_manager - INFO - Loading model: TheBloke/Llama-2-7B-Chat-GPTQ
+2025-03-23 20:04:50,720 - datasets - INFO - PyTorch version 2.6.0+cu126 available.
+2025-03-23 20:04:50,722 - datasets - INFO - Disabling Tensorflow because USE_TORCH is set
+2025-03-23 20:04:51,071 - auto_gptq.nn_modules.qlinear.qlinear_cuda - WARNING - CUDA extension not installed.
+2025-03-23 20:04:51,072 - auto_gptq.nn_modules.qlinear.qlinear_cuda_old - WARNING - CUDA extension not installed.
+2025-03-23 20:04:51,082 - core.model_manager - INFO - Using auto_gptq for model loading
+2025-03-23 20:04:51,503 - core.model_manager - INFO - Attempting to load model with standard AutoModelForCausalLM
+2025-03-23 20:04:51,684 - core.model_manager - WARNING - Standard loading failed: LlamaForCausalLM.__init__() got an unexpected keyword argument 'use_tf'
+2025-03-23 20:04:51,684 - core.model_manager - INFO - Loading GPTQ model with native Transformers support
+2025-03-23 20:04:51,776 - core.model_manager - ERROR - Error loading model TheBloke/Llama-2-7B-Chat-GPTQ: LlamaForCausalLM.__init__() got an unexpected keyword argument 'use_tf'
+2025-03-23 20:04:51,865 - gui.model_tab - ERROR - Error loading model: LlamaForCausalLM.__init__() got an unexpected keyword argument 'use_tf'
+2025-03-23 20:08:49,241 - core.settings - INFO - Settings saved to QSettings
+2025-03-23 20:08:49,241 - src.app - INFO - Settings saved on exit
+2025-03-23 20:08:50,849 - src.app - INFO - Models unloaded on exit
+2025-03-23 20:23:08,105 - run - INFO - Importing main application...
+2025-03-23 20:23:08,115 - core.model_manager - INFO - Using Transformers native GPTQ support
+2025-03-23 20:23:08,120 - run - INFO - Creating main window...
+2025-03-23 20:23:08,121 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 20:23:08,122 - core.model_manager - INFO - Model manager initialized
+2025-03-23 20:23:08,161 - src.gui.conversation_tab - INFO - Loaded 2 conversations
+2025-03-23 20:23:08,178 - src.app - INFO - Application initialized
+2025-03-23 20:23:08,232 - run - INFO - Application started successfully
+2025-03-23 20:23:21,280 - src.app - INFO - Manual memory cleanup performed
+2025-03-23 20:24:13,826 - core.settings - INFO - Settings saved to QSettings
+2025-03-23 20:24:13,827 - gui.dialogs.settings_dialog - INFO - Settings applied
+2025-03-23 20:24:16,226 - core.settings - INFO - Settings saved to QSettings
+2025-03-23 20:24:16,227 - gui.dialogs.settings_dialog - INFO - Settings applied
+2025-03-23 20:24:16,229 - src.app - INFO - Settings applied
+2025-03-23 20:26:41,717 - core.settings - INFO - Settings saved to QSettings
+2025-03-23 20:26:41,717 - src.app - INFO - Settings saved on exit
+2025-03-23 20:26:42,928 - src.app - INFO - Models unloaded on exit
+2025-03-23 20:26:48,837 - run - INFO - Importing main application...
+2025-03-23 20:26:48,845 - core.model_manager - INFO - Using Transformers native GPTQ support
+2025-03-23 20:26:48,903 - run - INFO - Creating main window...
+2025-03-23 20:26:48,904 - core.settings - INFO - Settings loaded from all sources
+2025-03-23 20:26:48,905 - core.model_manager - INFO - Model manager initialized
+2025-03-23 20:26:48,913 - run - ERROR - Error starting application: 'CodeGeneratorApp' object has no attribute 'history_manager'
+2025-03-23 20:26:48,914 - run - ERROR - Error displaying error message: local variable 'e' referenced before assignment
+2025-03-23 20:39:40,917 - run - INFO - Importing main application...
+2025-03-23 20:39:40,917 - run - INFO - Creating main window...
+2025-03-23 20:39:40,918 - src.core.settings - INFO - Settings loaded from all sources
+2025-03-23 20:39:40,919 - src.core.model_manager - INFO - Model manager initialized
+2025-03-23 20:39:40,927 - run - ERROR - Error starting application: 'CodeGeneratorApp' object has no attribute 'history_manager'
+2025-03-23 20:39:40,928 - run - ERROR - Error displaying error message: local variable 'e' referenced before assignment
+2025-03-23 20:41:59,911 - run - INFO - Importing main application...
+2025-03-23 20:41:59,911 - run - INFO - Creating main window...
+2025-03-23 20:41:59,912 - src.core.settings - INFO - Settings loaded from all sources
+2025-03-23 20:41:59,913 - src.core.model_manager - INFO - Model manager initialized
+2025-03-23 20:41:59,919 - src.data.history_manager - INFO - Loaded 2 history entries from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\history.json
+2025-03-23 20:41:59,919 - src.data.history_manager - INFO - History manager initialized with 2 entries
+2025-03-23 20:41:59,926 - src.data.template_manager - INFO - Loaded 3 templates from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\templates.json
+2025-03-23 20:41:59,926 - src.data.template_manager - INFO - Template manager initialized with 3 templates
+2025-03-23 20:41:59,964 - src.app - INFO - Application initialized
+2025-03-23 20:42:00,035 - run - INFO - Application started successfully
+2025-03-23 20:44:17,230 - run - INFO - Importing main application...
+2025-03-23 20:44:17,231 - run - INFO - Creating main window...
+2025-03-23 20:44:17,231 - src.core.settings - INFO - Settings loaded from all sources
+2025-03-23 20:44:17,232 - src.core.model_manager - INFO - Model manager initialized
+2025-03-23 20:44:17,233 - src.data.history_manager - INFO - Loaded 2 history entries from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\history.json
+2025-03-23 20:44:17,233 - src.data.history_manager - INFO - History manager initialized with 2 entries
+2025-03-23 20:44:17,233 - src.data.template_manager - INFO - Loaded 3 templates from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\templates.json
+2025-03-23 20:44:17,233 - src.data.template_manager - INFO - Template manager initialized with 3 templates
+2025-03-23 20:44:17,293 - src.app - INFO - Application initialized
+2025-03-23 20:44:17,364 - run - INFO - Application started successfully
+2025-03-23 20:48:57,644 - src.core.settings - INFO - Settings saved to QSettings
+2025-03-23 20:48:57,644 - src.app - INFO - Settings saved on exit
+2025-03-23 20:48:59,593 - src.app - INFO - Models unloaded on exit
+2025-03-23 20:51:26,136 - run - INFO - Importing main application...
+2025-03-23 20:51:26,136 - run - INFO - Creating main window...
+2025-03-23 20:51:26,137 - src.core.settings - INFO - Settings loaded from all sources
+2025-03-23 20:51:26,138 - src.core.model_manager - INFO - Model manager initialized
+2025-03-23 20:51:26,138 - src.data.history_manager - INFO - Loaded 2 history entries from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\history.json
+2025-03-23 20:51:26,138 - src.data.history_manager - INFO - History manager initialized with 2 entries
+2025-03-23 20:51:26,138 - src.data.template_manager - INFO - Loaded 3 templates from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\templates.json
+2025-03-23 20:51:26,138 - src.data.template_manager - INFO - Template manager initialized with 3 templates
+2025-03-23 20:51:26,198 - src.app - INFO - Application initialized
+2025-03-23 20:51:26,277 - run - INFO - Application started successfully
+2025-03-23 20:52:04,774 - src.core.model_manager - INFO - Set quantization: 8-bit=True, 4-bit=False
+2025-03-23 20:52:04,774 - src.core.model_manager - INFO - Set device map: auto
+2025-03-23 20:52:07,730 - src.core.model_manager - INFO - Loading model: Llama-3-8B-Lexi-Uncensored-GGUF
+2025-03-23 20:52:07,858 - src.core.model_manager - ERROR - Error loading tokenizer: Llama-3-8B-Lexi-Uncensored-GGUF is not a local folder and is not a valid model identifier listed on 'https://huggingface.co/models'
+If this is a private repository, make sure to pass a token having permission to this repo either by logging in with `huggingface-cli login` or by passing `token=<your_token>`
+2025-03-23 20:52:07,858 - src.core.model_manager - ERROR - Error loading model Llama-3-8B-Lexi-Uncensored-GGUF: Llama-3-8B-Lexi-Uncensored-GGUF is not a local folder and is not a valid model identifier listed on 'https://huggingface.co/models'
+If this is a private repository, make sure to pass a token having permission to this repo either by logging in with `huggingface-cli login` or by passing `token=<your_token>`
+2025-03-23 20:52:07,932 - src.gui.model_tab - ERROR - Error loading model: Llama-3-8B-Lexi-Uncensored-GGUF is not a local folder and is not a valid model identifier listed on 'https://huggingface.co/models'
+If this is a private repository, make sure to pass a token having permission to this repo either by logging in with `huggingface-cli login` or by passing `token=<your_token>`
+2025-03-23 21:00:15,676 - run - INFO - Importing main application...
+2025-03-23 21:00:15,676 - run - INFO - Creating main window...
+2025-03-23 21:00:15,677 - src.core.settings - INFO - Settings loaded from all sources
+2025-03-23 21:00:15,678 - src.core.model_manager - INFO - Model manager initialized
+2025-03-23 21:00:15,678 - src.data.history_manager - INFO - Loaded 2 history entries from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\history.json
+2025-03-23 21:00:15,678 - src.data.history_manager - INFO - History manager initialized with 2 entries
+2025-03-23 21:00:15,679 - src.data.template_manager - INFO - Loaded 3 templates from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\templates.json
+2025-03-23 21:00:15,679 - src.data.template_manager - INFO - Template manager initialized with 3 templates
+2025-03-23 21:00:15,742 - src.app - INFO - Application initialized
+2025-03-23 21:00:15,810 - run - INFO - Application started successfully
+2025-03-23 21:03:59,117 - src.core.settings - INFO - Settings saved to QSettings
+2025-03-23 21:03:59,118 - src.app - INFO - Settings saved on exit
+2025-03-23 21:04:00,720 - src.app - INFO - Models unloaded on exit
+2025-03-23 21:04:07,659 - run - INFO - Importing main application...
+2025-03-23 21:04:07,660 - run - INFO - Creating main window...
+2025-03-23 21:04:07,661 - src.core.settings - INFO - Settings loaded from all sources
+2025-03-23 21:04:07,662 - src.core.model_manager - INFO - Model manager initialized
+2025-03-23 21:04:07,662 - src.data.history_manager - INFO - Loaded 2 history entries from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\history.json
+2025-03-23 21:04:07,662 - src.data.history_manager - INFO - History manager initialized with 2 entries
+2025-03-23 21:04:07,662 - src.data.template_manager - INFO - Loaded 3 templates from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\templates.json
+2025-03-23 21:04:07,663 - src.data.template_manager - INFO - Template manager initialized with 3 templates
+2025-03-23 21:04:07,723 - src.app - INFO - Application initialized
+2025-03-23 21:04:07,795 - run - INFO - Application started successfully
+2025-03-23 21:11:52,301 - run - INFO - Importing main application...
+2025-03-23 21:11:52,302 - run - INFO - Creating main window...
+2025-03-23 21:11:52,303 - src.core.settings - INFO - Settings loaded from all sources
+2025-03-23 21:11:52,304 - src.core.model_manager - INFO - Model manager initialized
+2025-03-23 21:11:52,304 - src.data.history_manager - INFO - Loaded 2 history entries from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\history.json
+2025-03-23 21:11:52,304 - src.data.history_manager - INFO - History manager initialized with 2 entries
+2025-03-23 21:11:52,304 - src.data.template_manager - INFO - Loaded 3 templates from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\templates.json
+2025-03-23 21:11:52,304 - src.data.template_manager - INFO - Template manager initialized with 3 templates
+2025-03-23 21:11:52,364 - src.app - INFO - Application initialized
+2025-03-23 21:11:52,441 - run - INFO - Application started successfully
+2025-03-23 21:12:20,006 - src.gui.model_tab - ERROR - Error downloading model: snapshot_download() got an unexpected keyword argument 'tqdm_enabled'
+2025-03-23 21:12:20,007 - src.gui.model_tab - ERROR - Traceback (most recent call last):
+  File "c:\Users\drews\Documents\Mistral Unleashed\src\gui\model_tab.py", line 68, in run
+    snapshot_download(
+  File "C:\Program Files\Python310\lib\site-packages\huggingface_hub\utils\_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+TypeError: snapshot_download() got an unexpected keyword argument 'tqdm_enabled'
+
+2025-03-23 21:13:43,453 - run - INFO - Importing main application...
+2025-03-23 21:13:43,453 - run - INFO - Creating main window...
+2025-03-23 21:13:43,454 - src.core.settings - INFO - Settings loaded from all sources
+2025-03-23 21:13:43,455 - src.core.model_manager - INFO - Model manager initialized
+2025-03-23 21:13:43,455 - src.data.history_manager - INFO - Loaded 2 history entries from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\history.json
+2025-03-23 21:13:43,455 - src.data.history_manager - INFO - History manager initialized with 2 entries
+2025-03-23 21:13:43,455 - src.data.template_manager - INFO - Loaded 3 templates from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\templates.json
+2025-03-23 21:13:43,455 - src.data.template_manager - INFO - Template manager initialized with 3 templates
+2025-03-23 21:13:43,516 - src.app - INFO - Application initialized
+2025-03-23 21:13:43,586 - run - INFO - Application started successfully
+2025-03-23 21:14:21,820 - src.gui.model_tab - ERROR - Error downloading model: snapshot_download() got an unexpected keyword argument 'progress'
+2025-03-23 21:14:21,821 - src.gui.model_tab - ERROR - Traceback (most recent call last):
+  File "c:\Users\drews\Documents\Mistral Unleashed\src\gui\model_tab.py", line 68, in run
+    snapshot_download(
+  File "C:\Program Files\Python310\lib\site-packages\huggingface_hub\utils\_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+TypeError: snapshot_download() got an unexpected keyword argument 'progress'
+
+2025-03-23 21:16:29,962 - src.core.model_manager - INFO - Set quantization: 8-bit=True, 4-bit=False
+2025-03-23 21:16:29,962 - src.core.model_manager - INFO - Set device map: auto
+2025-03-23 21:16:29,963 - src.core.model_manager - INFO - Loading model: bartowski/Lexi-Llama-3-8B-Uncensored-GGUF
+2025-03-23 21:16:31,538 - src.core.model_manager - ERROR - Error loading tokenizer: Can't load tokenizer for 'bartowski/Lexi-Llama-3-8B-Uncensored-GGUF'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'bartowski/Lexi-Llama-3-8B-Uncensored-GGUF' is the correct path to a directory containing all relevant files for a BartTokenizerFast tokenizer.
+2025-03-23 21:16:31,539 - src.core.model_manager - ERROR - Error loading model bartowski/Lexi-Llama-3-8B-Uncensored-GGUF: Can't load tokenizer for 'bartowski/Lexi-Llama-3-8B-Uncensored-GGUF'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'bartowski/Lexi-Llama-3-8B-Uncensored-GGUF' is the correct path to a directory containing all relevant files for a BartTokenizerFast tokenizer.
+2025-03-23 21:16:31,619 - src.gui.model_tab - ERROR - Error loading model: Can't load tokenizer for 'bartowski/Lexi-Llama-3-8B-Uncensored-GGUF'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'bartowski/Lexi-Llama-3-8B-Uncensored-GGUF' is the correct path to a directory containing all relevant files for a BartTokenizerFast tokenizer.
+2025-03-23 21:16:31,621 - src.gui.model_tab - ERROR - Traceback (most recent call last):
+  File "c:\Users\drews\Documents\Mistral Unleashed\src\gui\model_tab.py", line 126, in run
+    import traceback
+  File "c:\Users\drews\Documents\Mistral Unleashed\src\core\model_manager.py", line 118, in load_model
+    tokenizer = AutoTokenizer.from_pretrained(
+  File "C:\Program Files\Python310\lib\site-packages\transformers\models\auto\tokenization_auto.py", line 992, in from_pretrained
+    return tokenizer_class_fast.from_pretrained(pretrained_model_name_or_path, *inputs, **kwargs)
+  File "C:\Program Files\Python310\lib\site-packages\transformers\tokenization_utils_base.py", line 2046, in from_pretrained
+    raise EnvironmentError(
+OSError: Can't load tokenizer for 'bartowski/Lexi-Llama-3-8B-Uncensored-GGUF'. If you were trying to load it from 'https://huggingface.co/models', make sure you don't have a local directory with the same name. Otherwise, make sure 'bartowski/Lexi-Llama-3-8B-Uncensored-GGUF' is the correct path to a directory containing all relevant files for a BartTokenizerFast tokenizer.
+
+2025-03-23 21:16:43,726 - src.core.settings - INFO - Settings saved to QSettings
+2025-03-23 21:16:43,726 - src.app - INFO - Settings saved on exit
+2025-03-23 21:16:45,276 - src.app - INFO - Models unloaded on exit
+2025-03-23 21:16:57,214 - run - INFO - Importing main application...
+2025-03-23 21:16:57,214 - run - INFO - Creating main window...
+2025-03-23 21:16:57,215 - src.core.settings - INFO - Settings loaded from all sources
+2025-03-23 21:16:57,216 - src.core.model_manager - INFO - Model manager initialized
+2025-03-23 21:16:57,217 - src.data.history_manager - INFO - Loaded 2 history entries from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\history.json
+2025-03-23 21:16:57,217 - src.data.history_manager - INFO - History manager initialized with 2 entries
+2025-03-23 21:16:57,217 - src.data.template_manager - INFO - Loaded 3 templates from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\templates.json
+2025-03-23 21:16:57,217 - src.data.template_manager - INFO - Template manager initialized with 3 templates
+2025-03-23 21:16:57,274 - src.app - INFO - Application initialized
+2025-03-23 21:16:57,354 - run - INFO - Application started successfully
+2025-03-23 21:17:20,411 - huggingface_hub.file_download - WARNING - Could not set the permissions on the file 'C:\Users\drews\.cache\huggingface\download\8_PA_wEVGiVa2goH2H4KQOQpvVY=.4ea05f1bc289d48ba9b92eea2f58ad8acd3dce5d.incomplete'. Error: [Errno 13] Permission denied: 'C:\\Users\\tmp_215cae40-c197-437b-8a35-da4896303435'.
+Continuing without setting permissions.
+2025-03-23 21:17:20,411 - huggingface_hub.file_download - WARNING - Could not set the permissions on the file 'C:\Users\drews\.cache\huggingface\download\ahkChHUJFxEmOdq5GDFEmerRzCY=.492d4b2966a1763442d426d880dbc29f94906e4c.incomplete'. Error: [Errno 13] Permission denied: 'C:\\Users\\tmp_e556f0c3-43d4-4d1d-9a57-b18c63eeb326'.
+Continuing without setting permissions.
+2025-03-23 21:17:20,421 - huggingface_hub.file_download - WARNING - Could not set the permissions on the file 'C:\Users\drews\.cache\huggingface\download\wPaCkH-WbT7GsmxMKKrNZTV4nSM=.a6344aac8c09253b3b630fb776ae94478aa0275b.incomplete'. Error: [Errno 13] Permission denied: 'C:\\Users\\tmp_7054ccf1-e595-4cb1-a49f-5cd20c177689'.
+Continuing without setting permissions.
+2025-03-23 21:17:20,421 - huggingface_hub.file_download - WARNING - Could not set the permissions on the file 'C:\Users\drews\.cache\huggingface\download\RLVoini9Jc-CDj7HUawYS6bPkLo=.f1ffbab317a5c0582b8ee6756a3cdfeb0cf684bc.incomplete'. Error: [Errno 13] Permission denied: 'C:\\Users\\tmp_5252b987-423e-4bca-a5be-af08f81e2b71'.
+Continuing without setting permissions.
+2025-03-23 21:17:20,561 - huggingface_hub.file_download - WARNING - Could not set the permissions on the file 'C:\Users\drews\.cache\huggingface\download\vzaExXFZNBay89bvlQv-ZcI6BTg=.fa96b85858f4053b0142a18e2b09dbe94e3fae46.incomplete'. Error: [Errno 13] Permission denied: 'C:\\Users\\tmp_65df1866-c66e-4bf0-ac3e-9d8324756c5a'.
+Continuing without setting permissions.
+2025-03-23 21:17:20,562 - huggingface_hub.file_download - WARNING - Could not set the permissions on the file 'C:\Users\drews\.cache\huggingface\download\HgM_lKo9sdSCfRtVg7MMFS7EKqo=.a6e931b92caff4c79c5c56282f1e89569a0ae558.incomplete'. Error: [Errno 13] Permission denied: 'C:\\Users\\tmp_e1e8023e-f864-4595-9f44-d094797e7a93'.
+Continuing without setting permissions.
+2025-03-23 21:17:20,610 - huggingface_hub.file_download - WARNING - Could not set the permissions on the file 'C:\Users\drews\.cache\huggingface\download\Xn7B-BWUGOee2Y6hCZtEhtFu4BE=.9737c9ce5074907aa44d575918c5367cd877471f.incomplete'. Error: [Errno 13] Permission denied: 'C:\\Users\\tmp_cb6274a6-18d9-43e4-a583-e517e1ac2b9e'.
+Continuing without setting permissions.
+2025-03-23 21:17:20,700 - huggingface_hub.file_download - WARNING - Could not set the permissions on the file 'C:\Users\drews\.cache\huggingface\download\7iVfz3cUOMr-hyjiqqRDHEwVBAM=.9e556afd44213b6bd1be2b850ebbbd98f5481437a8021afaf58ee7fb1818d347.incomplete'. Error: [Errno 13] Permission denied: 'C:\\Users\\tmp_7cd20b3a-fcd7-4471-92e5-eb0cf9161920'.
+Continuing without setting permissions.
+2025-03-23 21:17:24,873 - huggingface_hub.file_download - WARNING - Could not set the permissions on the file 'C:\Users\drews\.cache\huggingface\download\3EVKVggOldJcKSsGjSdoUCN1AyQ=.768e95e5b4dada726d7631277a4a87ecbb236f70.incomplete'. Error: [Errno 13] Permission denied: 'C:\\Users\\tmp_c0376bd1-6aa7-40c7-ae9e-0527b6d85318'.
+Continuing without setting permissions.
+2025-03-23 21:18:01,978 - huggingface_hub.file_download - WARNING - Could not set the permissions on the file 'C:\Users\drews\.cache\huggingface\download\xGOKKLRSlIhH692hSVvI1-gpoa8=.6e6001da2106d4757498752a021df6c2bdc332c650aae4bae6b0c004dcf14933.incomplete'. Error: [Errno 13] Permission denied: 'C:\\Users\\tmp_c478bfde-559d-4136-ad0a-66899804b263'.
+Continuing without setting permissions.
+2025-03-23 21:19:55,489 - src.core.settings - INFO - Settings saved to QSettings
+2025-03-23 21:19:55,490 - src.app - INFO - Settings saved on exit
+2025-03-23 21:19:57,141 - src.app - INFO - Models unloaded on exit
+2025-03-23 21:20:05,952 - run - INFO - Importing main application...
+2025-03-23 21:20:05,952 - run - INFO - Creating main window...
+2025-03-23 21:20:05,953 - src.core.settings - INFO - Settings loaded from all sources
+2025-03-23 21:20:05,954 - src.core.model_manager - INFO - Model manager initialized
+2025-03-23 21:20:05,955 - src.data.history_manager - INFO - Loaded 2 history entries from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\history.json
+2025-03-23 21:20:05,955 - src.data.history_manager - INFO - History manager initialized with 2 entries
+2025-03-23 21:20:05,955 - src.data.template_manager - INFO - Loaded 3 templates from C:\Users\drews\AppData\Roaming\AdvancedCodeGenerator\templates.json
+2025-03-23 21:20:05,959 - src.data.template_manager - INFO - Template manager initialized with 3 templates
+2025-03-23 21:20:06,019 - src.app - INFO - Application initialized
+2025-03-23 21:20:06,096 - run - INFO - Application started successfully
+2025-03-23 21:28:17,751 - src.core.settings - INFO - Settings saved to QSettings
+2025-03-23 21:28:17,751 - src.app - INFO - Settings saved on exit
+2025-03-23 21:28:19,311 - src.app - INFO - Models unloaded on exit

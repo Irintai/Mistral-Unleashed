@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QTabWidget,
                            QPushButton, QFileDialog, QDialogButtonBox,
                            QGroupBox, QRadioButton, QButtonGroup, QScrollArea)
 from PyQt5.QtCore import Qt, QSettings
+from PyQt5.QtGui import QFont, QFontDatabase, QColor
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -35,7 +36,26 @@ class SettingsDialog(QDialog):
         # Tab widget for settings categories
         self.tab_widget = QTabWidget()
         
-        # General settings tab
+        # Add all tabs
+        self.tab_widget.addTab(self.create_general_tab(), "General")
+        self.tab_widget.addTab(self.create_model_tab(), "Models")
+        self.tab_widget.addTab(self.create_conversation_ui_tab(), "Conversation UI")
+        self.tab_widget.addTab(self.create_paths_tab(), "Paths & Config")
+        
+        layout.addWidget(self.tab_widget)
+        
+        # Dialog buttons
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Apply)
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+        button_box.button(QDialogButtonBox.Apply).clicked.connect(self.apply_settings)
+        
+        layout.addWidget(button_box)
+        
+        self.setLayout(layout)
+        
+    def create_general_tab(self):
+        """Create the general settings tab."""
         general_tab = QScrollArea()
         general_tab.setWidgetResizable(True)
         general_widget = QWidget()
@@ -127,9 +147,10 @@ class SettingsDialog(QDialog):
         general_layout.addStretch()
         
         general_tab.setWidget(general_widget)
-        self.tab_widget.addTab(general_tab, "General")
+        return general_tab
         
-        # Model settings tab
+    def create_model_tab(self):
+        """Create the model settings tab."""
         model_tab = QScrollArea()
         model_tab.setWidgetResizable(True)
         model_widget = QWidget()
@@ -244,9 +265,95 @@ class SettingsDialog(QDialog):
         model_layout.addStretch()
         
         model_tab.setWidget(model_widget)
-        self.tab_widget.addTab(model_tab, "Models")
+        return model_tab
         
-        # Path settings tab
+    def create_conversation_ui_tab(self):
+        """Create the conversation UI settings tab with text customization options."""
+        from PyQt5.QtWidgets import QColorDialog
+        
+        conversation_tab = QScrollArea()
+        conversation_tab.setWidgetResizable(True)
+        conversation_widget = QWidget()
+        conversation_layout = QVBoxLayout(conversation_widget)
+        
+        # Font settings group
+        font_group = QGroupBox("Font Settings")
+        font_layout = QFormLayout()
+        
+        # Font family selection
+        self.conversation_font_combo = QComboBox()
+        font_families = QFontDatabase().families()
+        self.conversation_font_combo.addItems(font_families)
+        default_font = "Arial"
+        if default_font in font_families:
+            self.conversation_font_combo.setCurrentText(default_font)
+        font_layout.addRow("Conversation Font:", self.conversation_font_combo)
+        
+        # Font size
+        self.conversation_font_size_spin = QSpinBox()
+        self.conversation_font_size_spin.setRange(8, 24)
+        self.conversation_font_size_spin.setValue(14)
+        font_layout.addRow("Font Size:", self.conversation_font_size_spin)
+        
+        # Code font family
+        self.code_font_combo = QComboBox()
+        monospace_fonts = [f for f in font_families if "mono" in f.lower() or "courier" in f.lower() or "console" in f.lower()]
+        self.code_font_combo.addItems(monospace_fonts)
+        default_code_font = "Consolas"
+        if default_code_font in monospace_fonts:
+            self.code_font_combo.setCurrentText(default_code_font)
+        elif monospace_fonts:
+            self.code_font_combo.setCurrentText(monospace_fonts[0])
+        font_layout.addRow("Code Font:", self.code_font_combo)
+        
+        # Code font size
+        self.code_font_size_spin = QSpinBox()
+        self.code_font_size_spin.setRange(8, 20)
+        self.code_font_size_spin.setValue(13)
+        font_layout.addRow("Code Font Size:", self.code_font_size_spin)
+        
+        font_group.setLayout(font_layout)
+        conversation_layout.addWidget(font_group)
+        
+        # Colors group
+        colors_group = QGroupBox("Message Colors")
+        colors_layout = QFormLayout()
+        
+        # Helper to create color picker buttons
+        def create_color_button(default_color):
+            button = QPushButton()
+            button.setStyleSheet(f"background-color: {default_color}; min-width: 40px;")
+            button.clicked.connect(lambda: self.pick_color(button))
+            return button
+        
+        self.user_color_button = create_color_button("#333333")
+        colors_layout.addRow("User Message Color:", self.user_color_button)
+        
+        self.assistant_color_button = create_color_button("#333333")
+        colors_layout.addRow("Assistant Message Color:", self.assistant_color_button)
+        
+        self.system_color_button = create_color_button("#555555")
+        colors_layout.addRow("System Message Color:", self.system_color_button)
+        
+        self.code_bg_color_button = create_color_button("#f6f8fa")
+        colors_layout.addRow("Code Background:", self.code_bg_color_button)
+        
+        colors_group.setLayout(colors_layout)
+        conversation_layout.addWidget(colors_group)
+        
+        # Preview section (could be added later)
+        preview_group = QGroupBox("Preview")
+        preview_layout = QVBoxLayout()
+        preview_label = QLabel("Text styling changes will apply to new messages after settings are saved.")
+        preview_layout.addWidget(preview_label)
+        preview_group.setLayout(preview_layout)
+        conversation_layout.addWidget(preview_group)
+        
+        conversation_tab.setWidget(conversation_widget)
+        return conversation_tab
+    
+    def create_paths_tab(self):
+        """Create the paths settings tab."""
         paths_tab = QScrollArea()
         paths_tab.setWidgetResizable(True)
         paths_widget = QWidget()
@@ -297,19 +404,18 @@ class SettingsDialog(QDialog):
         paths_layout.addStretch()
         
         paths_tab.setWidget(paths_widget)
-        self.tab_widget.addTab(paths_tab, "Paths & Config")
+        return paths_tab
+    
+    def pick_color(self, button):
+        """Open a color picker dialog and update the button color."""
+        from PyQt5.QtGui import QColor
+        from PyQt5.QtWidgets import QColorDialog
         
-        layout.addWidget(self.tab_widget)
-        
-        # Dialog buttons
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Apply)
-        button_box.accepted.connect(self.accept)
-        button_box.rejected.connect(self.reject)
-        button_box.button(QDialogButtonBox.Apply).clicked.connect(self.apply_settings)
-        
-        layout.addWidget(button_box)
-        
-        self.setLayout(layout)
+        current_color = button.styleSheet().split("background-color:")[1].split(";")[0].strip()
+        color_dialog = QColorDialog(QColor(current_color), self)
+        if color_dialog.exec_():
+            color = color_dialog.selectedColor().name()
+            button.setStyleSheet(f"background-color: {color}; min-width: 40px;")
     
     def load_settings(self):
         """Load current settings into the dialog"""
@@ -357,6 +463,16 @@ class SettingsDialog(QDialog):
             
             # Templates path
             self.templates_path_edit.setText(settings.get("templates_path", ""))
+            
+            # Conversation UI settings
+            self.conversation_font_combo.setCurrentText(settings.get("conversation_font", "Arial"))
+            self.conversation_font_size_spin.setValue(int(settings.get("conversation_font_size", 14)))
+            self.code_font_combo.setCurrentText(settings.get("code_font", "Consolas"))
+            self.code_font_size_spin.setValue(int(settings.get("code_font_size", 13)))
+            self.user_color_button.setStyleSheet(f"background-color: {settings.get('user_color', '#333333')}; min-width: 40px;")
+            self.assistant_color_button.setStyleSheet(f"background-color: {settings.get('assistant_color', '#333333')}; min-width: 40px;")
+            self.system_color_button.setStyleSheet(f"background-color: {settings.get('system_color', '#555555')}; min-width: 40px;")
+            self.code_bg_color_button.setStyleSheet(f"background-color: {settings.get('code_bg_color', '#f6f8fa')}; min-width: 40px;")
             
             logger.debug("Settings loaded into dialog")
             
@@ -407,6 +523,16 @@ class SettingsDialog(QDialog):
             
             # Templates path
             self.settings_manager.set_value("templates_path", self.templates_path_edit.text())
+            
+            # Conversation UI settings
+            self.settings_manager.set_value("conversation_font", self.conversation_font_combo.currentText())
+            self.settings_manager.set_value("conversation_font_size", self.conversation_font_size_spin.value())
+            self.settings_manager.set_value("code_font", self.code_font_combo.currentText())
+            self.settings_manager.set_value("code_font_size", self.code_font_size_spin.value())
+            self.settings_manager.set_value("user_color", self.user_color_button.styleSheet().split("background-color:")[1].split(";")[0].strip())
+            self.settings_manager.set_value("assistant_color", self.assistant_color_button.styleSheet().split("background-color:")[1].split(";")[0].strip())
+            self.settings_manager.set_value("system_color", self.system_color_button.styleSheet().split("background-color:")[1].split(";")[0].strip())
+            self.settings_manager.set_value("code_bg_color", self.code_bg_color_button.styleSheet().split("background-color:")[1].split(";")[0].strip())
             
             # Save settings
             self.settings_manager.save()

@@ -7,9 +7,38 @@ import logging
 import torch
 import gc
 from typing import Dict, Tuple, Any, Optional, List
-
 # Initialize logger
 logger = logging.getLogger(__name__)
+
+try:
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+    import torch
+except ImportError as e:
+    logger.error(f"Critical import error: {str(e)}")
+    from PyQt5.QtWidgets import QMessageBox
+    QMessageBox.critical(
+        None,
+        "Import Error",
+        "Failed to import required libraries. Please install transformers and torch."
+    )
+# Add at the top of the file, after the imports
+HAS_GPTQ_SUPPORT = False
+GPTQ_METHOD = None  # Will be set to "auto_gptq" or "transformers" depending on availability
+
+try:
+    from transformers import GPTQConfig
+    HAS_GPTQ_SUPPORT = True
+    GPTQ_METHOD = "transformers"
+    logger.info("Using Transformers native GPTQ support")
+except ImportError:
+    try:
+        import auto_gptq
+        HAS_GPTQ_SUPPORT = True
+        GPTQ_METHOD = "auto_gptq"
+        logger.warning("Using AutoGPTQ which is deprecated. Consider installing Transformers with native GPTQ support.")
+    except ImportError:
+        logger.warning("No GPTQ support available. GPTQ models will require installation of transformers with GPTQ support.")
+
 
 class ModelManager:
     """Manager for language models, handling loading, caching and memory management"""
@@ -20,16 +49,80 @@ class ModelManager:
         self.model_cache: Dict[str, Tuple[Any, Any]] = {}
         
         # Currently active model
-        self.current_model_id: Optional[str] = None
-        self.current_tokenizer = None
-        self.current_model = None
+        self.active_model_id: Optional[str] = None
         
-        # Model load parameters
-        self.load_8bit = True  # Enable 8-bit quantization by default
-        self.load_4bit = False  # 4-bit quantization (off by default)
-        self.device_map = 'auto'  # Use auto device mapping
+        # Quantization settings
+        self.load_8bit: bool = False
+        self.load_4bit: bool = False
+        
+        # Device settings
+        self.device_map: str = "auto"  # "auto", "cuda:0", "cpu", etc.
+        
+        # GPU optimization settings
+        self.use_cuda_graph = False  # CUDA Graph optimization for inference
+        self.use_flash_attention = False  # Use flash attention if available
+        self.use_better_transformer = True  # Better transformer optimization
+        self.use_xformers = False  # Use xformers if available
+        self.use_torch_compile = False  # Use torch.compile for further optimization
+        
+        # Detect GPU capabilities
+        self.gpu_info = self._detect_gpu()
+        
+        # Initialize memory monitoring
+        self.memory_usage = 0.0
+        self.total_memory = 0.0
+        self.update_memory_usage()
         
         logger.info("Model manager initialized")
+    
+    def _detect_gpu(self) -> Dict[str, Any]:
+        """Detect GPU capabilities and return information"""
+        gpu_info = {
+            "has_gpu": torch.cuda.is_available(),
+            "gpu_count": torch.cuda.device_count(),
+            "gpu_names": [],
+            "cuda_version": torch.version.cuda,
+            "total_memory": 0,
+        }
+        
+        if gpu_info["has_gpu"]:
+            for i in range(gpu_info["gpu_count"]):
+                device_name = torch.cuda.get_device_name(i)
+                gpu_info["gpu_names"].append(device_name)
+                
+                # Get memory info
+                total_mem = torch.cuda.get_device_properties(i).total_memory
+                gpu_info["total_memory"] += total_mem
+                
+                logger.info(f"Found GPU {i}: {device_name} with {total_mem / 1024**3:.2f} GB memory")
+                
+                # Determine capabilities
+                if "RTX" in device_name or "Quadro" in device_name or "Tesla" in device_name:
+                    gpu_info["has_tensor_cores"] = True
+            
+            # Check for available optimization packages
+            try:
+                import flash_attn
+                self.use_flash_attention = True
+                logger.info("Flash Attention 2 available and enabled")
+            except ImportError:
+                self.use_flash_attention = False
+                logger.info("Flash Attention 2 not available. Using standard attention mechanisms.")
+            
+            try:
+                import xformers
+                self.use_xformers = True
+                logger.info("xformers available, enabled for memory-efficient attention")
+            except ImportError:
+                self.use_xformers = False
+                logger.info("xformers not available. Install for memory-efficient attention.")
+                
+            # Enable torch.compile if we have a capable PyTorch version
+            if hasattr(torch, 'compile') and callable(getattr(torch, 'compile')):
+                self.use_torch_compile = True
+                logger.info("torch.compile available, can be used for optimized inference")
+                
+        return gpu_info
     
     def load_model(self, model_id: str, token: Optional[str] = None, 
                 force_reload: bool = False) -> Tuple[Any, Any]:
@@ -53,7 +146,7 @@ class ModelManager:
             tokenizer, model = self.model_cache[model_id]
             
             # Update current model
-            self.current_model_id = model_id
+            self.active_model_id = model_id
             self.current_tokenizer = tokenizer
             self.current_model = model
             
@@ -65,7 +158,7 @@ class ModelManager:
             os.environ["USE_TF"] = "0"
             
             # Import here to avoid loading transformers at startup
-            from transformers import AutoTokenizer, AutoModelForCausalLM
+            from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
             
             logger.info(f"Loading model: {model_id}")
             
@@ -103,71 +196,160 @@ class ModelManager:
                 'trust_remote_code': True,
             }
             
-            # Explicitly disable TensorFlow
-            kwargs['use_tf'] = False
+            # Add GPU-specific optimizations
+            if torch.cuda.is_available():
+                # Apply memory-efficient attention mechanisms if available
+                if self.use_flash_attention:
+                    try:
+                        import flash_attn
+                        kwargs['attn_implementation'] = 'flash_attention_2'
+                        logger.info("Using Flash Attention 2 for efficient memory usage")
+                    except ImportError:
+                        logger.warning("Flash Attention 2 requested but package not installed")
+                
+                # For transformers models that support better transformer
+                if self.use_better_transformer:
+                    try:
+                        # Check if BetterTransformer is available in the current transformers version
+                        from transformers.utils import is_torch_greater_or_equal_than_1_10
+                        if is_torch_greater_or_equal_than_1_10():
+                            kwargs['use_bettertransformer'] = True
+                            logger.info("Using BetterTransformer for optimized inference")
+                    except (ImportError, AttributeError):
+                        logger.warning("BetterTransformer not available in this transformers version")
             
-            # Add quantization parameters if needed
-            if self.load_8bit:
-                kwargs['load_in_8bit'] = True
-            elif self.load_4bit:
-                kwargs['load_in_4bit'] = True
-                kwargs['bnb_4bit_compute_dtype'] = torch.float16
-                kwargs['bnb_4bit_quant_type'] = 'nf4'
+            # Add quantization parameters if needed - only for non-GPTQ models
+            if not is_gptq:
+                quantization_config = None
+                if self.load_8bit or self.load_4bit:
+                    quantization_config = BitsAndBytesConfig(
+                        load_in_8bit=self.load_8bit,
+                        load_in_4bit=self.load_4bit,
+                        bnb_4bit_compute_dtype=torch.float16
+                    )
+                kwargs['quantization_config'] = quantization_config
             
             # Try different loading strategies
+            model = None
             try:
                 # First attempt: standard loading
                 logger.info("Attempting to load model with standard AutoModelForCausalLM")
-                model = AutoModelForCausalLM.from_pretrained(
-                    model_id,
-                    **kwargs
-                )
+                # For Llama models, we need to filter out some parameters
+                if "llama" in model_id.lower():
+                    clean_kwargs = {k: v for k, v in kwargs.items() if k != 'use_tf'}
+                    model = AutoModelForCausalLM.from_pretrained(model_id, **clean_kwargs)
+                else:
+                    model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
+                
+                # Apply post-loading optimizations
+                if torch.cuda.is_available():
+                    # Apply optimizations if we have a GPU
+                    if model.device.type == "cuda":
+                        # Check if we need to apply optimizations
+                        try:
+                            # First check for built-in scaled dot product attention (available in newer PyTorch versions)
+                            # If the model already uses this optimization, we don't need to apply others
+                            if hasattr(torch.nn.functional, 'scaled_dot_product_attention'):
+                                logger.info("Model is using PyTorch's built-in scaled_dot_product_attention")
+                                uses_sdpa = True
+                            else:
+                                uses_sdpa = False
+                                
+                            # Only apply xformers if not using built-in SDPA
+                            if not uses_sdpa and self.use_xformers:
+                                import xformers
+                                logger.info("Applying xformers memory-efficient attention")
+                                model = self.apply_xformers(model)
+                        except ImportError:
+                            logger.warning("xformers not available, skipping this optimization")
+                        
+                        # Apply torch.compile for PyTorch 2.0+ when available
+                        if self.use_torch_compile and hasattr(torch, 'compile'):
+                            logger.info("Applying torch.compile for optimized performance")
+                            try:
+                                # Use the appropriate backend
+                                compile_backend = "inductor"  # Default for PyTorch 2.0+
+                                model = torch.compile(model, backend=compile_backend)
+                            except Exception as compile_error:
+                                logger.warning(f"torch.compile failed: {str(compile_error)}")
+            
             except Exception as e:
                 logger.warning(f"Standard loading failed: {str(e)}")
                 
                 if is_gptq:
-                    # Second attempt: try loading with auto-gptq if available
-                    try:
-                        logger.info("Attempting to load GPTQ model with specific loader")
+                    if not HAS_GPTQ_SUPPORT:
+                        # No fallback - we require GPTQ support
+                        error_msg = ("Cannot load GPTQ model: No GPTQ support available. "
+                                    "Please install transformers with GPTQ support or auto_gptq.")
+                        logger.error(error_msg)
+                        raise ImportError(error_msg)
+                    
+                    elif GPTQ_METHOD == "transformers":
+                        # Use native transformers GPTQ support
+                        logger.info("Loading GPTQ model with native Transformers support")
+                        # Create a clean set of kwargs for GPTQ - filter out problematic parameters
+                        gptq_kwargs = {k: v for k, v in kwargs.items() 
+                                    if k not in ['load_in_8bit', 'load_in_4bit', 
+                                                'bnb_4bit_compute_dtype', 'bnb_4bit_quant_type',
+                                                'use_tf']}  # Remove use_tf parameter
+                        
+                        gptq_kwargs["quantization_config"] = GPTQConfig(bits=4, use_exllama=True)
+                        
+                        model = AutoModelForCausalLM.from_pretrained(
+                            model_id,
+                            **gptq_kwargs
+                        )
+                    else:  # GPTQ_METHOD == "auto_gptq"
+                        # Use deprecated AutoGPTQ
+                        logger.info("Loading GPTQ model with AutoGPTQ")
                         from auto_gptq import AutoGPTQForCausalLM
+                        
+                        # Filter out problematic parameters for AutoGPTQ
+                        autogptq_kwargs = {k: v for k, v in kwargs.items() 
+                                        if k not in ['load_in_8bit', 'load_in_4bit', 
+                                                    'bnb_4bit_compute_dtype', 'bnb_4bit_quant_type',
+                                                    'use_tf']}
+                        
                         model = AutoGPTQForCausalLM.from_quantized(
                             model_id,
                             use_triton=False,
-                            device_map=self.device_map,
-                            trust_remote_code=True,
-                            use_auth_token=token
+                            **autogptq_kwargs
                         )
-                    except Exception as gptq_e:
-                        logger.error(f"GPTQ-specific loading failed: {str(gptq_e)}")
-                        
-                        # Third attempt: try suggesting an alternative model
-                        if "llama" in model_id.lower():
-                            alt_model_id = model_id.replace("GPTQ", "GGUF")
-                            logger.warning(f"Consider using {alt_model_id} instead, as GGUF models often have fewer dependencies")
-                        
-                        # Re-raise the original exception
-                        raise e
                 else:
-                    # Re-raise the original exception
-                    raise
-            
-            # Set model to evaluation mode
+                    try:
+                        logger.info("Attempting to load with bitsandbytes 8-bit quantization as fallback")
+                        kwargs['quantization_config'] = BitsAndBytesConfig(load_in_8bit=True, load_in_4bit=False, bnb_4bit_compute_dtype=torch.float16)
+                        model = AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
+                    except Exception as fallback_e:
+                        logger.error(f"Fallback loading failed: {str(fallback_e)}")
+                        raise e  # Re-raise original error if fallback also fails
+
+            # Check if model was successfully loaded
+            if model is None:
+                raise ValueError(f"Failed to load model {model_id} with any available method")
+                
+            # Set model to evaluation mode for inference
             model.eval()
+            
+            # Optimize for inference if possible
+            model = self.configure_for_inference(model)
             
             # Store in cache
             self.model_cache[model_id] = (tokenizer, model)
             
-            # Update current model
-            self.current_model_id = model_id
+            # Update current model references
+            self.active_model_id = model_id
             self.current_tokenizer = tokenizer
             self.current_model = model
             
             # Report success
             logger.info(f"Model {model_id} loaded successfully")
             
+            # Update memory usage statistics
+            self.update_memory_usage()
+            
             # Return the model and tokenizer
             return tokenizer, model
-            
         except Exception as e:
             logger.error(f"Error loading model {model_id}: {str(e)}")
             # Clean up any partial loading
@@ -175,8 +357,8 @@ class ModelManager:
                 del self.model_cache[model_id]
             
             # Reset current model if it was the one being loaded
-            if self.current_model_id == model_id:
-                self.current_model_id = None
+            if self.active_model_id == model_id:
+                self.active_model_id = None
                 self.current_tokenizer = None
                 self.current_model = None
             
@@ -200,7 +382,7 @@ class ModelManager:
         """
         # Determine which model to unload
         if model_id is None:
-            model_id = self.current_model_id
+            model_id = self.active_model_id
         
         if not model_id or model_id not in self.model_cache:
             logger.warning(f"No model to unload: {model_id}")
@@ -213,8 +395,8 @@ class ModelManager:
             _, model = self.model_cache.pop(model_id)
             
             # If this was the current model, reset current model
-            if model_id == self.current_model_id:
-                self.current_model_id = None
+            if model_id == self.active_model_id:
+                self.active_model_id = None
                 self.current_tokenizer = None
                 self.current_model = None
             
@@ -246,7 +428,7 @@ class ModelManager:
                 self.unload_model(model_id)
             
             # Reset current model
-            self.current_model_id = None
+            self.active_model_id = None
             self.current_tokenizer = None
             self.current_model = None
             
@@ -268,7 +450,7 @@ class ModelManager:
         Returns:
             Tuple of (model_id, tokenizer, model), or (None, None, None) if no model is loaded
         """
-        return self.current_model_id, self.current_tokenizer, self.current_model
+        return self.active_model_id, self.current_tokenizer, self.current_model
     
     def get_model_parameters(self, model_id: Optional[str] = None) -> Dict[str, Any]:
         """
@@ -282,7 +464,7 @@ class ModelManager:
         """
         # Determine which model to use
         if model_id is None:
-            model_id = self.current_model_id
+            model_id = self.active_model_id
         
         if not model_id or model_id not in self.model_cache:
             return {}
@@ -365,14 +547,14 @@ class ModelManager:
         Returns:
             str: Formatted model information, or message if no model is loaded
         """
-        if not self.current_model_id:
+        if not self.active_model_id:
             return "No model currently loaded."
         
         try:
             params = self.get_model_parameters()
             
             if not params:
-                return f"Model {self.current_model_id} is loaded, but details are not available."
+                return f"Model {self.active_model_id} is loaded, but details are not available."
             
             # Format information as HTML for rich display
             info = f"<h3>Model: {params['model_id']}</h3>\n\n"
@@ -431,7 +613,7 @@ class ModelManager:
             
         except Exception as e:
             logger.error(f"Error formatting model info: {str(e)}")
-            return f"Model {self.current_model_id} is loaded, but an error occurred retrieving details."
+            return f"Model {self.active_model_id} is loaded, but an error occurred retrieving details."
     
     def set_quantization(self, use_8bit: bool = True, use_4bit: bool = False) -> None:
         """
@@ -473,7 +655,7 @@ class ModelManager:
             bool: True if the model is loaded, False otherwise
         """
         if model_id is None:
-            return self.current_model_id is not None
+            return self.active_model_id is not None
         
         return model_id in self.model_cache
     
@@ -499,3 +681,103 @@ class ModelManager:
                     stats[f"device_{i}_reserved"] = torch.cuda.memory_reserved(i) / (1024 ** 3)
         
         return stats
+    
+    def update_memory_usage(self):
+        """Update GPU memory usage statistics"""
+        if torch.cuda.is_available():
+            # Get memory statistics for all GPUs
+            total_memory = 0
+            used_memory = 0
+            
+            for i in range(torch.cuda.device_count()):
+                try:
+                    # Get memory stats in bytes
+                    total_mem = torch.cuda.get_device_properties(i).total_memory
+                    reserved_mem = torch.cuda.memory_reserved(i)
+                    allocated_mem = torch.cuda.memory_allocated(i)
+                    
+                    # Convert to more readable formats
+                    total_memory += total_mem
+                    used_memory += allocated_mem
+                    
+                    # Log memory usage per device
+                    logger.debug(f"GPU {i} Memory: {allocated_mem / 1024**2:.1f}MB allocated, "
+                              f"{reserved_mem / 1024**2:.1f}MB reserved, "
+                              f"{total_mem / 1024**2:.1f}MB total")
+                except Exception as e:
+                    logger.error(f"Error getting memory for GPU {i}: {e}")
+            
+            # Update cached memory values
+            self.memory_usage = used_memory
+            self.total_memory = total_memory
+            
+            # Return memory usage percentage
+            if total_memory > 0:
+                return (used_memory / total_memory) * 100
+            return 0
+        else:
+            return 0
+    
+    def optimize_memory(self, aggressive=False):
+        """Optimize GPU memory usage by clearing unused memory"""
+        if not torch.cuda.is_available():
+            return
+        
+        # Standard cleanup
+        gc.collect()
+        torch.cuda.empty_cache()
+        
+        # More aggressive optimization if requested
+        if aggressive:
+            # Force a full garbage collection cycle
+            gc.collect(generation=2)
+            
+            # Try to release unused memory back to the GPU
+            if hasattr(torch.cuda, 'memory_stats'):
+                for i in range(torch.cuda.device_count()):
+                    torch.cuda.reset_peak_memory_stats(i)
+            
+            # On CUDA 11.4+, we can use this for even better memory cleanup
+            if hasattr(torch.cuda, 'memory_stats') and callable(getattr(torch.cuda, 'memory_stats')):
+                torch.cuda.synchronize()
+            
+            # Log memory usage after optimization
+            mem_usage = self.update_memory_usage()
+            logger.info(f"Memory optimized. Current usage: {mem_usage:.1f}%")
+    
+    def configure_for_inference(self, model):
+        """Configure model for optimal inference performance"""
+        if not model or not torch.cuda.is_available():
+            return model
+        
+        try:
+            # Set model to evaluation mode
+            model.eval()
+            
+            # Disable gradient computation for inference
+            for param in model.parameters():
+                param.requires_grad = False
+            
+            # Apply CUDA optimizations for inference
+            if self.use_cuda_graph and hasattr(torch, 'cuda') and hasattr(torch.cuda, 'make_graphed_callables'):
+                try:
+                    logger.info("Attempting to use CUDA Graph for inference optimization")
+                    # Note: This is an advanced optimization that not all models support
+                    # This implementation is simplified and may need model-specific adjustments
+                    # torch.cuda.make_graphed_callables() is used in real implementations
+                except Exception as e:
+                    logger.warning(f"Could not apply CUDA Graph optimization: {e}")
+            
+            # Return the optimized model
+            return model
+        except Exception as e:
+            logger.error(f"Error configuring model for inference: {e}")
+            return model
+    
+    def apply_xformers(self, model):
+        """Apply xformers memory-efficient attention"""
+        import xformers
+        model = model.to_bettertransformer()
+        model.config.attn_implementation = "xformers"
+        logger.info("Applied xformers memory-efficient attention")
+        return model

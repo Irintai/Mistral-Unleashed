@@ -9,6 +9,9 @@ import logging
 import time
 import torch
 from PyQt5.QtWidgets import (QMessageBox)  
+from PyQt5.QtWidgets import QApplication
+from src.app import CodeGeneratorApp
+from main import AdvancedCodeGeneratorApp
 
 # Set up logging
 logging.basicConfig(
@@ -95,7 +98,7 @@ def main():
         
         # Import the app
         logger.info("Importing main application...")
-        from app import CodeGeneratorApp
+        from src.app import CodeGeneratorApp
         
         # Create main window
         logger.info("Creating main window...")

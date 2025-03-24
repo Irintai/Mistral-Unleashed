@@ -1,6 +1,6 @@
 """
 Conversation module for Advanced Code Generator.
-Allows for natural language conversation in addition to code generation.
+Allows conversational interaction with the model.
 """
 
 import os
@@ -8,775 +8,588 @@ import sys
 import time
 import json
 import logging
-import torch
-import re
-from typing import Dict, List, Tuple, Any, Optional
+from typing import Dict, List, Optional, Any, Tuple
+from datetime import datetime
+
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTextEdit, 
                            QLineEdit, QPushButton, QLabel, QSplitter, 
-                           QScrollArea, QFrame, QSizePolicy, QMenu, QAction)
+                           QScrollArea, QFrame, QSizePolicy, QMenu, QAction,
+                           QInputDialog, QMessageBox, QFileDialog, QDialog, QToolBar,
+                           QProgressBar, QComboBox, QCheckBox, QGroupBox, QFormLayout,
+                           QSlider, QDoubleSpinBox)
 from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot, QTimer, QSize
-from PyQt5.QtGui import QFont, QTextCursor, QIcon, QTextCharFormat, QColor
+from PyQt5.QtGui import QFont, QTextCursor, QIcon
+from PyQt5.QtWidgets import QApplication
+
+# Import custom modules
+from src.gui.conversation_streaming import StreamingConversationGenerator
+from src.gui.message_widget import Message, MessageWidget
+from src.gui.message_formatting import create_formatted_message_widget
+from src.gui.markdown_renderer import MarkdownTextEdit, MarkdownRenderer
 
 # Logger for this module
 logger = logging.getLogger(__name__)
 
-class Message:
-    """Class representing a conversation message"""
+class ConversationTab(QWidget):
+    """Tab for having conversations with the model."""
     
-    def __init__(self, text: str, is_user: bool, timestamp: float = None):
-        self.text = text
-        self.is_user = is_user
-        self.timestamp = timestamp or time.time()
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert message to dictionary for serialization"""
-        return {
-            "text": self.text,
-            "is_user": self.is_user,
-            "timestamp": self.timestamp
-        }
-    
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Message':
-        """Create message from dictionary"""
-        return cls(
-            text=data["text"],
-            is_user=data["is_user"],
-            timestamp=data["timestamp"]
-        )
-
-class Conversation:
-    """Class representing a full conversation"""
-    
-    def __init__(self, title: str = None, messages: List[Message] = None):
-        self.title = title or f"Conversation {time.strftime('%Y-%m-%d %H:%M')}"
-        self.messages = messages or []
-        self.created_at = time.time()
-        self.updated_at = time.time()
-        self.id = f"conv_{int(self.created_at)}"
-    
-    def add_message(self, message: Message) -> None:
-        """Add a message to the conversation"""
-        self.messages.append(message)
-        self.updated_at = time.time()
-    
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert conversation to dictionary for serialization"""
-        return {
-            "id": self.id,
-            "title": self.title,
-            "messages": [msg.to_dict() for msg in self.messages],
-            "created_at": self.created_at,
-            "updated_at": self.updated_at
-        }
-    
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Conversation':
-        """Create conversation from dictionary"""
-        conv = cls(
-            title=data["title"],
-            messages=[Message.from_dict(msg) for msg in data["messages"]]
-        )
-        conv.id = data.get("id", conv.id)
-        conv.created_at = data.get("created_at", conv.created_at)
-        conv.updated_at = data.get("updated_at", conv.updated_at)
-        return conv
-
-class ConversationManager:
-    """Manages conversations and handles persistence"""
-    
-    def __init__(self, storage_path: str = None):
-        """Initialize conversation manager"""
-        self.storage_path = storage_path or self._get_default_storage_path()
-        self.conversations: Dict[str, Conversation] = {}
-        self.current_conversation_id: Optional[str] = None
-        
-        # Ensure storage directory exists
-        os.makedirs(os.path.dirname(self.storage_path), exist_ok=True)
-        
-        # Load existing conversations
-        self.load_conversations()
-    
-    def _get_default_storage_path(self) -> str:
-        """Get default storage path for conversations"""
-        if os.name == 'nt':  # Windows
-            app_data = os.environ.get('APPDATA', os.path.expanduser('~'))
-            app_dir = os.path.join(app_data, "AdvancedCodeGenerator")
-        elif os.name == 'posix':  # macOS/Linux
-            if os.path.exists('/Applications'):  # macOS
-                app_data = os.path.expanduser('~/Library/Application Support')
-                app_dir = os.path.join(app_data, "AdvancedCodeGenerator")
-            else:  # Linux
-                app_data = os.path.expanduser('~/.local/share')
-                app_dir = os.path.join(app_data, "advancedcodegenerator")
-        else:  # Fallback
-            app_dir = os.path.expanduser(f'~/.advancedcodegenerator')
-        
-        os.makedirs(app_dir, exist_ok=True)
-        return os.path.join(app_dir, "conversations.json")
-    
-    def load_conversations(self) -> None:
-        """Load conversations from storage"""
-        try:
-            if os.path.exists(self.storage_path):
-                with open(self.storage_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                
-                # Load conversations
-                self.conversations = {
-                    conv_id: Conversation.from_dict(conv_data)
-                    for conv_id, conv_data in data.get("conversations", {}).items()
-                }
-                
-                # Set current conversation
-                self.current_conversation_id = data.get("current_conversation_id")
-                
-                logger.info(f"Loaded {len(self.conversations)} conversations")
-        except Exception as e:
-            logger.error(f"Error loading conversations: {str(e)}")
-    
-    def save_conversations(self) -> None:
-        """Save conversations to storage"""
-        try:
-            # Prepare data for serialization
-            data = {
-                "conversations": {
-                    conv_id: conv.to_dict()
-                    for conv_id, conv in self.conversations.items()
-                },
-                "current_conversation_id": self.current_conversation_id
-            }
-            
-            # Save to file
-            with open(self.storage_path, 'w', encoding='utf-8') as f:
-                json.dump(data, f, indent=2)
-            
-            logger.debug("Conversations saved")
-        except Exception as e:
-            logger.error(f"Error saving conversations: {str(e)}")
-    
-    def create_conversation(self, title: str = None) -> Conversation:
-        """Create a new conversation"""
-        conversation = Conversation(title=title)
-        self.conversations[conversation.id] = conversation
-        self.current_conversation_id = conversation.id
-        self.save_conversations()
-        return conversation
-    
-    def get_conversation(self, conversation_id: str) -> Optional[Conversation]:
-        """Get a conversation by ID"""
-        return self.conversations.get(conversation_id)
-    
-    def get_current_conversation(self) -> Optional[Conversation]:
-        """Get the current conversation"""
-        if self.current_conversation_id:
-            return self.conversations.get(self.current_conversation_id)
-        return None
-    
-    def set_current_conversation(self, conversation_id: str) -> bool:
-        """Set the current conversation"""
-        if conversation_id in self.conversations:
-            self.current_conversation_id = conversation_id
-            self.save_conversations()
-            return True
-        return False
-    
-    def add_message(self, text: str, is_user: bool) -> Optional[Message]:
-        """Add a message to the current conversation"""
-        # Get or create current conversation
-        conversation = self.get_current_conversation()
-        if not conversation:
-            conversation = self.create_conversation()
-        
-        # Create and add message
-        message = Message(text=text, is_user=is_user)
-        conversation.add_message(message)
-        
-        # Save conversations
-        self.save_conversations()
-        
-        return message
-    
-    def get_all_conversations(self) -> List[Conversation]:
-        """Get all conversations sorted by updated_at (newest first)"""
-        return sorted(
-            self.conversations.values(),
-            key=lambda conv: conv.updated_at,
-            reverse=True
-        )
-    
-    def delete_conversation(self, conversation_id: str) -> bool:
-        """Delete a conversation"""
-        if conversation_id in self.conversations:
-            del self.conversations[conversation_id]
-            
-            # Update current conversation if deleted
-            if self.current_conversation_id == conversation_id:
-                # Set to newest conversation or None
-                all_convs = self.get_all_conversations()
-                self.current_conversation_id = all_convs[0].id if all_convs else None
-            
-            self.save_conversations()
-            return True
-        return False
-    
-    def rename_conversation(self, conversation_id: str, new_title: str) -> bool:
-        """Rename a conversation"""
-        conversation = self.get_conversation(conversation_id)
-        if conversation:
-            conversation.title = new_title
-            conversation.updated_at = time.time()
-            self.save_conversations()
-            return True
-        return False
-
-class MessageWidget(QFrame):
-    """Widget for displaying a single message"""
-    
-    def __init__(self, message: Message, parent=None):
+    def __init__(self, parent=None):
+        """Initialize the conversation tab."""
         super().__init__(parent)
-        self.message = message
-        self.init_ui()
-    
-    def init_ui(self):
-        """Initialize the UI"""
-        # Set frame style
-        self.setFrameShape(QFrame.StyledPanel)
-        self.setFrameShadow(QFrame.Raised)
-        self.setLineWidth(1)
+        self.parent = parent
         
-        # Set background color based on message type
-        if self.message.is_user:
-            self.setStyleSheet("background-color: #E1F5FE; border-radius: 8px;")
-        else:
-            self.setStyleSheet("background-color: #F5F5F5; border-radius: 8px;")
+        # Initialize model and tokenizer
+        self.model = None
+        self.tokenizer = None
+        self.model_name = None
         
-        # Create layout
-        layout = QVBoxLayout()
+        # Initialize conversation history
+        self.conversation_history = []
+        self.current_conversation_id = None
+        
+        # Initialize streaming generator and keep a strong reference
+        self._streaming_generator = StreamingConversationGenerator(self)
+        self.streaming_generator = self._streaming_generator  # Keep a reference to prevent garbage collection
+        
+        # Connect streaming signals
+        self.streaming_generator.token_generated.connect(self.on_token_generated)
+        self.streaming_generator.generation_started.connect(self.on_generation_started)
+        self.streaming_generator.generation_finished.connect(self.on_generation_finished)
+        self.streaming_generator.generation_error.connect(self.on_generation_error)
+        self.streaming_generator.progress_updated.connect(self.on_progress_updated)
+        
+        # Initialize response being generated flag
+        self.is_generating = False
+        
+        # Setup UI
+        self.setup_ui()
+        
+    def setup_ui(self):
+        """Set up the conversation tab UI."""
+        # Main layout
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(10, 10, 10, 10)
         
-        # Create message header
-        header_layout = QHBoxLayout()
+        # Controls area - for parameters, model selection, etc.
+        controls_layout = QHBoxLayout()
         
-        # Sender label
-        sender_label = QLabel("You:" if self.message.is_user else "Assistant:")
-        sender_label.setStyleSheet("font-weight: bold;")
-        header_layout.addWidget(sender_label)
+        # Parameter controls group
+        params_group = QGroupBox("Generation Parameters")
+        params_layout = QFormLayout(params_group)
         
-        # Timestamp label
-        time_str = time.strftime("%I:%M %p", time.localtime(self.message.timestamp))
-        time_label = QLabel(time_str)
-        time_label.setStyleSheet("color: #757575; font-size: 10px;")
-        header_layout.addWidget(time_label, alignment=Qt.AlignRight)
+        # Temperature slider
+        self.temperature_label = QLabel("Temperature: 0.7")
+        self.temperature_slider = QSlider(Qt.Horizontal)
+        self.temperature_slider.setRange(0, 100)  # 0.0 to 1.0
+        self.temperature_slider.setValue(70)      # Default 0.7
+        self.temperature_slider.valueChanged.connect(self.update_temperature_label)
+        params_layout.addRow(self.temperature_label, self.temperature_slider)
         
-        layout.addLayout(header_layout)
+        # Top-p slider
+        self.top_p_label = QLabel("Top-p: 0.9")
+        self.top_p_slider = QSlider(Qt.Horizontal)
+        self.top_p_slider.setRange(0, 100)  # 0.0 to 1.0
+        self.top_p_slider.setValue(90)      # Default 0.9
+        self.top_p_slider.valueChanged.connect(self.update_top_p_label)
+        params_layout.addRow(self.top_p_label, self.top_p_slider)
         
-        # Message text
-        message_text = QTextEdit()
-        message_text.setReadOnly(True)
-        message_text.setPlainText(self.message.text)
-        message_text.setFrameStyle(QFrame.NoFrame)
-        message_text.setStyleSheet("background-color: transparent;")
-        message_text.document().setDocumentMargin(0)
+        # Max length control
+        self.max_length_label = QLabel("Max Length:")
+        self.max_length_spin = QDoubleSpinBox()
+        self.max_length_spin.setRange(50, 2000)
+        self.max_length_spin.setValue(500)
+        self.max_length_spin.setSingleStep(50)
+        params_layout.addRow(self.max_length_label, self.max_length_spin)
         
-        # Adjust height based on content
-        doc_height = message_text.document().size().height()
-        message_text.setFixedHeight(min(doc_height + 5, 300))
+        # Add parameters group to controls layout
+        controls_layout.addWidget(params_group)
         
-        layout.addWidget(message_text)
+        # Status label for model info
+        self.model_info_label = QLabel("No model loaded")
+        self.model_info_label.setStyleSheet("color: red;")
+        controls_layout.addWidget(self.model_info_label)
         
-        self.setLayout(layout)
-
-class ConversationTab(QWidget):
-    """Tab for conversation interface"""
-    
-    # Signals
-    message_sent = pyqtSignal(str)
-    
-    def __init__(self, parent=None, model_manager=None):
-        super().__init__(parent)
-        
-        # Store model manager for generating responses
-        self.model_manager = model_manager
-        
-        # Create conversation manager
-        self.conversation_manager = ConversationManager()
-        
-        # Initialize UI
-        self.init_ui()
-        
-        # Load conversation if any
-        self.load_current_conversation()
-    
-    def init_ui(self):
-        """Initialize the UI"""
-        # Main layout
-        main_layout = QVBoxLayout()
-        main_layout.setSpacing(10)
-        
-        # Splitter for conversation list and chat area
-        self.splitter = QSplitter(Qt.Horizontal)
-        
-        # Conversation list section
-        conversations_widget = QWidget()
-        conversations_layout = QVBoxLayout()
-        conversations_layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Conversation list header
-        list_header = QLabel("Conversations")
-        list_header.setStyleSheet("font-weight: bold; font-size: 14px;")
-        conversations_layout.addWidget(list_header)
-        
-        # New conversation button
-        new_conv_button = QPushButton("New Conversation")
-        new_conv_button.clicked.connect(self.new_conversation)
-        conversations_layout.addWidget(new_conv_button)
-        
-        # Conversation list
-        self.conversation_list = QScrollArea()
-        self.conversation_list.setWidgetResizable(True)
-        self.conversation_list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.conversation_list.setFrameShape(QFrame.NoFrame)
-        
-        # Container for conversation items
-        self.conversation_list_container = QWidget()
-        self.conversation_list_layout = QVBoxLayout()
-        self.conversation_list_layout.setContentsMargins(0, 0, 0, 0)
-        self.conversation_list_layout.setSpacing(5)
-        self.conversation_list_layout.addStretch()
-        
-        self.conversation_list_container.setLayout(self.conversation_list_layout)
-        self.conversation_list.setWidget(self.conversation_list_container)
-        
-        conversations_layout.addWidget(self.conversation_list)
-        conversations_widget.setLayout(conversations_layout)
-        
-        # Add to splitter
-        self.splitter.addWidget(conversations_widget)
-        
-        # Chat area
-        chat_widget = QWidget()
-        chat_layout = QVBoxLayout()
-        chat_layout.setContentsMargins(0, 0, 0, 0)
-        
-        # Conversation title
-        self.conversation_title = QLabel("New Conversation")
-        self.conversation_title.setStyleSheet("font-weight: bold; font-size: 16px;")
-        chat_layout.addWidget(self.conversation_title)
+        # Add controls to main layout
+        layout.addLayout(controls_layout)
         
         # Messages area
         self.messages_scroll = QScrollArea()
         self.messages_scroll.setWidgetResizable(True)
-        self.messages_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.messages_scroll.setFrameShape(QFrame.NoFrame)
         
-        # Container for messages
+        # Messages container
         self.messages_container = QWidget()
-        self.messages_layout = QVBoxLayout()
-        self.messages_layout.setContentsMargins(0, 0, 0, 0)
+        self.messages_layout = QVBoxLayout(self.messages_container)
+        self.messages_layout.setAlignment(Qt.AlignTop)
         self.messages_layout.setSpacing(10)
-        self.messages_layout.addStretch()
-        
-        self.messages_container.setLayout(self.messages_layout)
         self.messages_scroll.setWidget(self.messages_container)
         
-        chat_layout.addWidget(self.messages_scroll)
-        
-        # Input area
+        # Message input area
         input_layout = QHBoxLayout()
         
+        # Text input
         self.message_input = QTextEdit()
         self.message_input.setPlaceholderText("Type your message here...")
-        self.message_input.setAcceptRichText(False)
-        self.message_input.setFixedHeight(80)
-        
-        # Set up key event for sending message with Ctrl+Enter
-        self.message_input.keyPressEvent = self.input_key_press
-        
+        self.message_input.setMinimumHeight(100)
+        self.message_input.setMaximumHeight(200)
         input_layout.addWidget(self.message_input)
         
+        # Send button
         self.send_button = QPushButton("Send")
+        self.send_button.setIcon(QIcon("resources/icons/send.png"))
         self.send_button.clicked.connect(self.send_message)
-        self.send_button.setFixedWidth(80)
         input_layout.addWidget(self.send_button)
         
-        chat_layout.addLayout(input_layout)
-        chat_widget.setLayout(chat_layout)
+        # Progress bar for generation
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setVisible(False)
         
-        # Add to splitter
-        self.splitter.addWidget(chat_widget)
+        # Stop generation button
+        self.stop_button = QPushButton("Stop Generation")
+        self.stop_button.setIcon(QIcon("resources/icons/stop.png"))
+        self.stop_button.clicked.connect(self.stop_generation)
+        self.stop_button.setVisible(False)
         
-        # Set initial splitter sizes (30% list, 70% chat)
-        self.splitter.setSizes([300, 700])
+        # Add to main layout
+        layout.addWidget(self.messages_scroll)
+        layout.addWidget(self.progress_bar)
+        layout.addWidget(self.stop_button)
+        layout.addLayout(input_layout)
         
-        main_layout.addWidget(self.splitter)
+        # Connect signals
+        self.message_input.textChanged.connect(self.adjust_input_height)
         
-        # Status label
-        self.status_label = QLabel("Ready")
-        main_layout.addWidget(self.status_label)
-        
-        self.setLayout(main_layout)
+        # Markdown renderer
+        self.markdown_renderer = MarkdownRenderer()
     
-    def on_model_loaded(self, model_id, tokenizer, model):
-        """Handle model loaded event"""
-        # Update status
-        self.status_label.setText(f"Model {model_id} loaded and ready")
-        
-        # Inform the user if they're in this tab
-        if self.isVisible():
-            self.add_assistant_message(
-                f"Model {model_id} has been loaded and is ready for conversation. Feel free to start chatting!"
-            )
+    def update_temperature_label(self, value):
+        """Update the temperature label when slider value changes."""
+        temperature = value / 100.0
+        self.temperature_label.setText(f"Temperature: {temperature:.1f}")
     
-    def on_model_unloaded(self):
-        """Handle model unloaded event"""
-        # Reset model references
-        self.status_label.setText("Model unloaded")
-        
-        # Inform the user if they're in this tab
-        if self.isVisible():
-            self.add_assistant_message(
-                "The model has been unloaded. Please load a model from the Model Selection tab to continue the conversation."
-            )
+    def update_top_p_label(self, value):
+        """Update the top-p label when slider value changes."""
+        top_p = value / 100.0
+        self.top_p_label.setText(f"Top-p: {top_p:.1f}")
     
-    def generate_response(self, user_message):
-        """Generate a response to the user message"""
-        if not self.model_manager or not self.model_manager.is_model_loaded():
-            # No model loaded
-            self.add_assistant_message(
-                "I'm sorry, but no language model is currently loaded. "
-                "Please load a model from the Model Selection tab first."
-            )
-            return
-    
-    def generate_response(self, user_message):
-        """Generate a response to the user message"""
-        if not self.model_manager or not self.model_manager.is_model_loaded():
-            # No model loaded
-            self.add_assistant_message(
-                "I'm sorry, but no language model is currently loaded. "
-                "Please load a model from the Model Selection tab first."
-            )
-            return
-    def input_key_press(self, event):
-        """Handle key press events in the message input"""
-        if event.key() == Qt.Key_Return and event.modifiers() & Qt.ControlModifier:
-            self.send_message()
-        else:
-            # Pass event to default handler
-            QTextEdit.keyPressEvent(self.message_input, event)
-    
-    def load_current_conversation(self):
-        """Load the current conversation if any"""
-        self.update_conversation_list()
-        
-        current_conv = self.conversation_manager.get_current_conversation()
-        if current_conv:
-            self.display_conversation(current_conv)
-        else:
-            # Create a new conversation if none exists
-            self.new_conversation()
-    
-    def update_conversation_list(self):
-        """Update the conversation list"""
-        # Clear existing items
-        for i in reversed(range(self.conversation_list_layout.count() - 1)):
-            item = self.conversation_list_layout.itemAt(i)
-            if item.widget():
-                item.widget().deleteLater()
-        
-        # Get all conversations
-        conversations = self.conversation_manager.get_all_conversations()
-        
-        # Add conversation items
-        current_id = self.conversation_manager.current_conversation_id
-        for conv in conversations:
-            item = QPushButton(conv.title)
-            item.setProperty("conversation_id", conv.id)
-            item.clicked.connect(lambda checked, cid=conv.id: self.select_conversation(cid))
-            
-            # Style for current conversation
-            if conv.id == current_id:
-                item.setStyleSheet("background-color: #E1F5FE;")
-            
-            # Add context menu
-            item.setContextMenuPolicy(Qt.CustomContextMenu)
-            item.customContextMenuRequested.connect(
-                lambda pos, cid=conv.id: self.show_conversation_menu(pos, cid)
-            )
-            
-            self.conversation_list_layout.insertWidget(0, item)
-    
-    def show_conversation_menu(self, position, conversation_id):
-        """Show context menu for conversation item"""
-        menu = QMenu()
-        
-        rename_action = QAction("Rename", self)
-        rename_action.triggered.connect(lambda: self.rename_conversation(conversation_id))
-        menu.addAction(rename_action)
-        
-        delete_action = QAction("Delete", self)
-        delete_action.triggered.connect(lambda: self.delete_conversation(conversation_id))
-        menu.addAction(delete_action)
-        
-        # Get widget that triggered the menu
-        sender = self.sender()
-        
-        # Show menu at position
-        global_pos = sender.mapToGlobal(position)
-        menu.exec_(global_pos)
-    
-    def rename_conversation(self, conversation_id):
-        """Rename a conversation"""
-        from PyQt5.QtWidgets import QInputDialog
-        
-        conversation = self.conversation_manager.get_conversation(conversation_id)
-        if not conversation:
-            return
-        
-        # Show input dialog
-        new_title, ok = QInputDialog.getText(
-            self,
-            "Rename Conversation",
-            "Enter new title:",
-            text=conversation.title
-        )
-        
-        if ok and new_title:
-            # Rename conversation
-            self.conversation_manager.rename_conversation(conversation_id, new_title)
-            
-            # Update UI
-            self.update_conversation_list()
-            
-            # Update title if current conversation
-            if conversation_id == self.conversation_manager.current_conversation_id:
-                self.conversation_title.setText(new_title)
-    
-    def delete_conversation(self, conversation_id):
-        """Delete a conversation"""
-        from PyQt5.QtWidgets import QMessageBox
-        
-        # Confirm deletion
-        confirm = QMessageBox.question(
-            self,
-            "Delete Conversation",
-            "Are you sure you want to delete this conversation?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
-        )
-        
-        if confirm == QMessageBox.Yes:
-            # Delete conversation
-            self.conversation_manager.delete_conversation(conversation_id)
-            
-            # Update UI
-            self.update_conversation_list()
-            
-            # Load current conversation
-            current_conv = self.conversation_manager.get_current_conversation()
-            if current_conv:
-                self.display_conversation(current_conv)
-            else:
-                # Create a new conversation if none exists
-                self.new_conversation()
-    
-    def select_conversation(self, conversation_id):
-        """Select a conversation to display"""
-        conversation = self.conversation_manager.get_conversation(conversation_id)
-        if conversation:
-            # Set as current conversation
-            self.conversation_manager.set_current_conversation(conversation_id)
-            
-            # Display conversation
-            self.display_conversation(conversation)
-            
-            # Update conversation list
-            self.update_conversation_list()
-    
-    def display_conversation(self, conversation):
-        """Display a conversation"""
-        # Clear existing messages
-        for i in reversed(range(self.messages_layout.count() - 1)):
-            item = self.messages_layout.itemAt(i)
-            if item.widget():
-                item.widget().deleteLater()
-        
-        # Set conversation title
-        self.conversation_title.setText(conversation.title)
-        
-        # Add messages
-        for message in conversation.messages:
-            self.add_message_widget(message)
-        
-        # Scroll to bottom
-        QTimer.singleShot(100, self.scroll_to_bottom)
-    
-    def add_message_widget(self, message):
-        """Add a message widget to the messages area"""
-        message_widget = MessageWidget(message)
-        self.messages_layout.insertWidget(self.messages_layout.count() - 1, message_widget)
-    
-    def scroll_to_bottom(self):
-        """Scroll to the bottom of the messages area"""
-        self.messages_scroll.verticalScrollBar().setValue(
-            self.messages_scroll.verticalScrollBar().maximum()
-        )
-    
-    def new_conversation(self):
-        """Create a new conversation"""
-        # Create new conversation
-        conversation = self.conversation_manager.create_conversation()
-        
-        # Update UI
-        self.display_conversation(conversation)
-        self.update_conversation_list()
-        
-        # Set focus to input
-        self.message_input.setFocus()
+    def adjust_input_height(self):
+        """Adjust the height of the input field based on content."""
+        doc_height = self.message_input.document().size().height()
+        # Cap the height to avoid taking too much space
+        if doc_height < 200:
+            self.message_input.setFixedHeight(max(100, int(doc_height) + 20))
     
     def send_message(self):
-        """Send a message"""
-        # Get message text
-        text = self.message_input.toPlainText().strip()
+        """Send a message and generate a response."""
+        # Check if a generation is already in progress
+        if self.is_generating:
+            return
         
-        if not text:
+        # Get message text
+        message_text = self.message_input.toPlainText().strip()
+        if not message_text:
             return
         
         # Clear input
         self.message_input.clear()
         
-        # Add user message
-        self.add_user_message(text)
+        # Create user message
+        user_message = Message(message_text, role="user")
         
-        # Emit message sent signal
-        self.message_sent.emit(text)
+        # Add to conversation history
+        self.conversation_history.append(user_message)
         
-        # Generate response
-        self.generate_response(text)
+        # Display user message
+        self.add_message_widget(user_message)
+        
+        # Start generating response
+        self.generate_response()
     
-    def add_user_message(self, text):
-        """Add a user message to the current conversation"""
-        # Add message to conversation manager
-        message = self.conversation_manager.add_message(text, is_user=True)
+    def generate_response(self):
+        """Generate a response based on conversation history."""
+        # Check if model is loaded
+        if not self.model or not self.tokenizer:
+            self.show_error_message("No model loaded", "Please load a model first.")
+            return
         
-        # Add message widget
-        self.add_message_widget(message)
-        
-        # Scroll to bottom
-        self.scroll_to_bottom()
-        
-        # Update conversation title if first message
-        current_conv = self.conversation_manager.get_current_conversation()
-        if current_conv and len(current_conv.messages) == 1:
-            # Use first line of message as title
-            first_line = text.split('\n', 1)[0]
-            title = first_line[:30] + "..." if len(first_line) > 30 else first_line
-            self.conversation_manager.rename_conversation(current_conv.id, title)
-            self.conversation_title.setText(title)
+        # Check if already generating
+        if self.is_generating:
+            return
             
-            # Update conversation list
-            self.update_conversation_list()
-    
-    def add_assistant_message(self, text):
-        """Add an assistant message to the current conversation"""
-        # Add message to conversation manager
-        message = self.conversation_manager.add_message(text, is_user=False)
+        # Set generating flag
+        self.is_generating = True
         
-        # Add message widget
-        self.add_message_widget(message)
+        # Show progress bar and stop button
+        self.progress_bar.setVisible(True)
+        self.stop_button.setVisible(True)
         
-        # Scroll to bottom
-        self.scroll_to_bottom()
-    
-    def generate_response(self, user_message):
-        """Generate a response to the user message"""
-        if not self.model_manager or not self.model_manager.is_model_loaded():
-            # No model loaded
-            self.add_assistant_message(
-                "I'm sorry, but no language model is currently loaded. "
-                "Please load a model from the Model Selection tab first."
-            )
-            return
+        # Disable send button
+        self.send_button.setEnabled(False)
         
-        # Get model and tokenizer
-        model_id, tokenizer, model = self.model_manager.get_current_model()
-        
-        if not model or not tokenizer:
-            # Model loading issue
-            self.add_assistant_message(
-                "I'm sorry, but there was an issue with the language model. "
-                "Please try reloading it from the Model Selection tab."
-            )
-            return
+        # Create assistant message widget (initially empty)
+        assistant_message = Message("", role="assistant")
+        self.conversation_history.append(assistant_message)
+        message_widget = self.add_message_widget(assistant_message)
         
         try:
-            # Update status
-            self.status_label.setText("Generating response...")
+            # Build the conversation prompt
+            prompt = self.build_conversation_prompt()
             
-            # Get conversation history for context
-            current_conv = self.conversation_manager.get_current_conversation()
-            conversation_history = []
+            # Log the prompt for debugging
+            logger.info(f"Prompt length: {len(prompt)}")
+            logger.debug(f"Prompt: {prompt[:100]}...")
             
-            if current_conv:
-                for msg in current_conv.messages[-6:]:  # Last 6 messages for context
-                    if msg.is_user:
-                        conversation_history.append(f"User: {msg.text}")
-                    else:
-                        conversation_history.append(f"Assistant: {msg.text}")
-            
-            # Create prompt with conversation history
-            if conversation_history:
-                # Remove the last user message (which we'll add explicitly below)
-                if conversation_history[-1].startswith("User:"):
-                    conversation_history.pop()
-                
-                context = "\n".join(conversation_history)
-                prompt = f"{context}\n\nUser: {user_message}\n\nAssistant:"
-            else:
-                prompt = f"User: {user_message}\n\nAssistant:"
-            
-            # Generate response
-            input_ids = tokenizer.encode(prompt, return_tensors="pt")
-            
-            # Move to same device as model
-            device = next(model.parameters()).device
-            input_ids = input_ids.to(device)
-            
-            # Set generation parameters
-            gen_kwargs = {
-                "max_length": min(input_ids.shape[1] + 500, 2048),  # Cap at 2048 tokens
-                "temperature": 0.7,
-                "top_p": 0.9,
-                "repetition_penalty": 1.1,
-                "do_sample": True,
-                "pad_token_id": tokenizer.eos_token_id
+            # Set parameters
+            params = {
+                "temperature": self.temperature_slider.value() / 100.0,
+                "top_p": self.top_p_slider.value() / 100.0,
+                "max_length": int(self.max_length_spin.value()),
+                "stream_interval": 0.05  # 50ms interval for smooth streaming
             }
             
-            # Generate
-            with torch.no_grad():
-                output = model.generate(input_ids, **gen_kwargs)
+            # Set up streaming generator
+            self.streaming_generator.setup(
+                model=self.model,
+                tokenizer=self.tokenizer,
+                prompt=prompt,
+                params=params
+            )
             
-            # Decode the output
-            response = tokenizer.decode(output[0], skip_special_tokens=True)
-            
-            # Extract assistant's response
-            response = response.split("Assistant:", 1)[-1].strip()
-            
-            # Check if empty
-            if not response:
-                response = "I'm sorry, I'm not sure how to respond to that."
-            
-            # Add assistant message
-            self.add_assistant_message(response)
-            
-            # Update status
-            self.status_label.setText("Ready")
+            # Start generation
+            logger.info("Starting generation process...")
+            self.streaming_generator.start_generation()
             
         except Exception as e:
-            logger.error(f"Error generating response: {str(e)}")
-            self.add_assistant_message(
-                "I'm sorry, but I encountered an error while generating a response. "
-                f"Error: {str(e)}"
-            )
-            self.status_label.setText("Error generating response")
+            logger.error(f"Error starting generation: {str(e)}")
+            self.show_error_message("Generation Error", str(e))
+            self.is_generating = False
+            self.send_button.setEnabled(True)
+            self.progress_bar.setVisible(False)
+            self.stop_button.setVisible(False)
+    
+    def stop_generation(self):
+        """Stop ongoing response generation."""
+        if self.is_generating:
+            self.streaming_generator.stop()
+            self.on_generation_finished()
+    
+    @pyqtSlot(str)
+    def on_token_generated(self, token):
+        """Handle newly generated token."""
+        logger.debug(f"Token received: {token}")
+        
+        # Update the last assistant message
+        if self.conversation_history and self.conversation_history[-1].role == "assistant":
+            assistant_message = self.conversation_history[-1]
+            assistant_message.content += token
+            
+            # Find assistant message widget and update it
+            for i in range(self.messages_layout.count()):
+                widget = self.messages_layout.itemAt(i).widget()
+                if isinstance(widget, MessageWidget) and widget.message == assistant_message:
+                    logger.debug(f"Updating message widget with new content")
+                    widget.update_message(assistant_message)
+                    break
+    
+    @pyqtSlot()
+    def on_generation_started(self):
+        """Handle generation start event."""
+        self.is_generating = True
+        self.progress_bar.setValue(0)
+        self.progress_bar.setVisible(True)
+        self.stop_button.setVisible(True)
+        self.send_button.setEnabled(False)
+    
+    @pyqtSlot()
+    def on_generation_finished(self):
+        """Handle generation finished event."""
+        self.is_generating = False
+        self.progress_bar.setVisible(False)
+        self.stop_button.setVisible(False)
+        self.send_button.setEnabled(True)
+        self.progress_bar.setValue(100)
+        
+        # Scroll to bottom to show new message
+        self.messages_scroll.verticalScrollBar().setValue(
+            self.messages_scroll.verticalScrollBar().maximum()
+        )
+    
+    @pyqtSlot(str)
+    def on_generation_error(self, error_message):
+        """Handle generation error event."""
+        logger.error(f"Generation error: {error_message}")
+        self.show_error_message("Generation Error", error_message)
+        self.is_generating = False
+        self.progress_bar.setVisible(False)
+        self.stop_button.setVisible(False)
+        self.send_button.setEnabled(True)
+    
+    @pyqtSlot(int)
+    def on_progress_updated(self, progress):
+        """Handle progress update event."""
+        self.progress_bar.setValue(progress)
+    
+    def build_conversation_prompt(self):
+        """Build conversation prompt from history."""
+        prompt = "The following is a conversation with an AI assistant. The assistant is helpful, creative, clever, and very friendly.\n\n"
+        
+        for message in self.conversation_history:
+            if message.role == "user":
+                prompt += f"Human: {message.content}\n"
+            elif message.role == "assistant":
+                # Only include completed assistant messages (not the one being generated)
+                if message != self.conversation_history[-1]:
+                    prompt += f"Assistant: {message.content}\n"
+        
+        # Add the last prompt without content
+        prompt += "Assistant: "
+        
+        return prompt
+    
+    def add_message_widget(self, message):
+        """Add a message widget to the conversation."""
+        widget = MessageWidget(
+            message,
+            on_copy=self.copy_message,
+            on_edit=self.edit_message if message.role == "user" else None,
+            on_delete=self.delete_message
+        )
+        
+        # Connect reaction signal
+        widget.reaction_clicked.connect(self.handle_message_reaction)
+        
+        # Add to layout
+        self.messages_layout.addWidget(widget)
+        
+        # Scroll to bottom
+        QTimer.singleShot(50, lambda: self.messages_scroll.verticalScrollBar().setValue(
+            self.messages_scroll.verticalScrollBar().maximum()
+        ))
+        
+        return widget
+    
+    def copy_message(self, message):
+        """Copy message content to clipboard."""
+        clipboard = QApplication.clipboard()
+        clipboard.setText(message.content)
+    
+    def edit_message(self, message):
+        """Edit a user message."""
+        # Can only edit if not generating
+        if self.is_generating:
+            return
+        
+        # Get the index of the message in history
+        try:
+            index = next(i for i, msg in enumerate(self.conversation_history) 
+                       if msg.message_id == message.message_id)
+        except StopIteration:
+            return
+        
+        # Set the input text
+        self.message_input.setPlainText(message.content)
+        
+        # Remove this message and all messages after it
+        self.conversation_history = self.conversation_history[:index]
+        
+        # Remove corresponding widgets
+        for i in reversed(range(index, self.messages_layout.count())):
+            widget = self.messages_layout.itemAt(i).widget()
+            if widget:
+                widget.setParent(None)
+    
+    def delete_message(self, message):
+        """Delete a message."""
+        # Can only delete if not generating
+        if self.is_generating:
+            return
+        
+        # Confirm deletion
+        confirm = QMessageBox.question(
+            self, "Confirm Deletion", 
+            "Are you sure you want to delete this message?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        )
+        
+        if confirm != QMessageBox.Yes:
+            return
+        
+        # Get the index of the message in history
+        try:
+            index = next(i for i, msg in enumerate(self.conversation_history) 
+                       if msg.message_id == message.message_id)
+        except StopIteration:
+            return
+        
+        # Remove this message and all messages after it
+        self.conversation_history = self.conversation_history[:index]
+        
+        # Remove corresponding widgets
+        for i in reversed(range(index, self.messages_layout.count())):
+            widget = self.messages_layout.itemAt(i).widget()
+            if widget:
+                widget.setParent(None)
+    
+    def handle_message_reaction(self, message_id, action, data):
+        """Handle message reactions like thumbs up/down."""
+        # Find the message
+        try:
+            message = next(msg for msg in self.conversation_history 
+                         if msg.message_id == message_id)
+        except StopIteration:
+            return
+        
+        # Handle thumbs up/down
+        if action == "thumbs_up":
+            message.add_reaction("thumbs_up")
+            message.remove_reaction("thumbs_down")
+        elif action == "thumbs_down":
+            message.add_reaction("thumbs_down")
+            message.remove_reaction("thumbs_up")
+        
+        # Save conversation if needed
+        if self.current_conversation_id:
+            self.save_conversation()
+    
+    def save_conversation(self):
+        """Save the current conversation to a file."""
+        if not self.current_conversation_id:
+            return
+        
+        # Convert conversation to JSON
+        conversation_data = {
+            "id": self.current_conversation_id,
+            "title": f"Conversation {self.current_conversation_id}",
+            "messages": [msg.to_dict() for msg in self.conversation_history],
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        # Create conversations directory if it doesn't exist
+        os.makedirs("conversations", exist_ok=True)
+        
+        # Save to file
+        filename = f"conversations/{self.current_conversation_id}.json"
+        with open(filename, "w") as f:
+            json.dump(conversation_data, f, indent=2)
+        
+        logger.info(f"Saved conversation to {filename}")
+    
+    def load_conversation(self, conversation_id):
+        """Load a conversation from a file."""
+        filename = f"conversations/{conversation_id}.json"
+        
+        try:
+            with open(filename, "r") as f:
+                data = json.load(f)
+            
+            # Clear current conversation
+            self.clear_conversation()
+            
+            # Set conversation ID
+            self.current_conversation_id = conversation_id
+            
+            # Load messages
+            for msg_data in data.get("messages", []):
+                message = Message.from_dict(msg_data)
+                self.conversation_history.append(message)
+                self.add_message_widget(message)
+            
+            logger.info(f"Loaded conversation {conversation_id}")
+            
+            return True
+        except Exception as e:
+            logger.error(f"Error loading conversation: {str(e)}")
+            return False
+    
+    def new_conversation(self):
+        """Start a new conversation."""
+        # Check if already generating
+        if self.is_generating:
+            return
+        
+        # Clear the current conversation
+        self.clear_conversation()
+        
+        # Generate a new conversation ID
+        self.current_conversation_id = f"conv_{int(time.time())}"
+        
+        logger.info(f"Started new conversation {self.current_conversation_id}")
+    
+    def clear_conversation(self):
+        """Clear the current conversation."""
+        # Clear conversation history
+        self.conversation_history = []
+        
+        # Clear conversation ID
+        self.current_conversation_id = None
+        
+        # Clear UI
+        for i in reversed(range(self.messages_layout.count())):
+            widget = self.messages_layout.itemAt(i).widget()
+            if widget:
+                widget.setParent(None)
+    
+    def show_error_message(self, title, message):
+        """Show error message dialog."""
+        QMessageBox.critical(self, title, message)
+    
+    def closeEvent(self, event):
+        """Handle tab closing - clean up resources."""
+        if self.streaming_generator:
+            logger.info("Cleaning up streaming generator")
+            self.streaming_generator.cleanup()
+            
+        # Unload model from this tab
+        if self.model:
+            logger.info("Model unloaded from conversation tab")
+            self.model = None
+            self.tokenizer = None
+        
+        # Call parent class method
+        super().closeEvent(event)
+    
+    def on_model_loaded(self, model_id, tokenizer, model):
+        """Handle event when a model is loaded."""
+        logger.info(f"Model loaded in conversation tab: {model_id}")
+        
+        # Store model and tokenizer references
+        self.model = model
+        self.tokenizer = tokenizer
+        self.model_name = model_id
+        
+        # Update model info label
+        self.model_info_label.setText(f"Model: {model_id}")
+        
+        # Enable the send button now that a model is loaded
+        self.send_button.setEnabled(True)
+        
+        # Enable model-specific features if needed
+        self.message_input.setEnabled(True)
+        
+        # Check if model is on GPU
+        if next(model.parameters()).is_cuda:
+            logger.info("Model is using GPU acceleration")
+            self.model_info_label.setText(f"Model: {model_id} (GPU)")
+        else:
+            logger.info("Model is using CPU")
+            self.model_info_label.setText(f"Model: {model_id} (CPU)")
+            
+        # Setup the streaming generator with the new model
+        self.streaming_generator.setup(model=model, tokenizer=tokenizer)
+    
+    def on_model_unloaded(self):
+        """Handle model unloaded event."""
+        self.model = None
+        self.tokenizer = None
+        
+        # Update status in UI if needed
+        if hasattr(self, 'model_info_label'):
+            self.model_info_label.setText("No model loaded")
+            self.model_info_label.setStyleSheet("color: red;")
+        
+        # Disable send button when no model is loaded
+        self.send_button.setEnabled(False)
+        
+        logger.info("Model unloaded from conversation tab")

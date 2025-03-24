@@ -1,0 +1,7 @@
+PyQt5>=5.15.0
+QScintilla>=2.11.0
+torch>=1.10.0
+transformers>=4.20.0
+pyyaml>=6.0
+black>=21.5b0
+jsbeautifier>=1.13.0

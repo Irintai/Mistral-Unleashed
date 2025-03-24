@@ -39,7 +39,17 @@ DEFAULT_SETTINGS = {
     # Paths
     "history_path": "",
     "templates_path": "",
-    "models_cache_path": ""
+    "models_cache_path": "",
+    
+    # UI font and text settings
+    "conversation_font_family": "Arial",
+    "conversation_font_size": 14,
+    "user_message_color": "#333333",
+    "assistant_message_color": "#333333",
+    "system_message_color": "#555555",
+    "code_font_family": "Consolas, monospace",
+    "code_font_size": 13,
+    "code_background_color": "#f6f8fa"
 }
 
 class SettingsManager:

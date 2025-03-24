@@ -20,6 +20,8 @@ from src.gui.model_tab import ModelSelectionTab
 from src.gui.code_tab import EnhancedCodeGenerationTab
 from src.gui.history_tab import HistoryTab
 from src.gui.template_tab import TemplateTab
+from src.gui.conversation_tab import ConversationTab
+from src.gui.huggingface_tab import HuggingFaceTab
 
 # Import data components
 from src.data.history_manager import HistoryManager
@@ -84,11 +86,15 @@ class AdvancedCodeGeneratorApp(QMainWindow):
         self.code_tab = EnhancedCodeGenerationTab()
         self.history_tab = HistoryTab(self.history_manager)
         self.template_tab = TemplateTab(self.template_manager)
+        self.conversation_tab = ConversationTab(model_manager=self.model_manager)
+        self.huggingface_tab = HuggingFaceTab(model_manager=self.model_manager)
         
         self.tab_widget.addTab(self.model_tab, "Model Selection")
         self.tab_widget.addTab(self.code_tab, "Code Generation")
         self.tab_widget.addTab(self.history_tab, "History")
         self.tab_widget.addTab(self.template_tab, "Templates")
+        self.tab_widget.addTab(self.conversation_tab, "Conversation")
+        self.tab_widget.addTab(self.huggingface_tab, "Hugging Face")
         
         # Connect signals
         self.connect_signals()
@@ -108,15 +114,62 @@ class AdvancedCodeGeneratorApp(QMainWindow):
         self.model_tab.model_loaded.connect(self.on_model_loaded)
         self.model_tab.model_unloaded.connect(self.on_model_unloaded)
         
+        # Conversation tab signals
+        self.conversation_tab.model_loaded.connect(self.on_model_loaded)
+        self.conversation_tab.model_unloaded.connect(self.on_model_unloaded)
+        
         # History tab signals
         self.history_tab.entry_selected.connect(self.on_history_entry_selected)
         
         # Template tab signals
         self.template_tab.template_applied.connect(self.on_template_applied)
+        
+        # Hugging Face tab signals
+        self.huggingface_tab.model_selected.connect(self.on_huggingface_model_selected)
     
+    def on_huggingface_model_selected(self, model_id):
+        """Handle model selection from the Hugging Face tab"""
+        # Check if a model is currently loaded
+        if self.model_manager.is_model_loaded():
+            # Ask if user wants to unload current model first
+            from PyQt5.QtWidgets import QMessageBox
+            reply = QMessageBox.question(
+                self,
+                "Model Already Loaded",
+                "A model is already loaded. Do you want to unload it and load the new model?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.Yes
+            )
+            
+            if reply == QMessageBox.No:
+                return
+            
+            # Unload current model
+            self.model_tab.unload_model()
+        
+        # Switch to model tab
+        self.tab_widget.setCurrentWidget(self.model_tab)
+        
+        # Set the model ID in the model tab's input field
+        if hasattr(self.model_tab, 'model_combo'):
+            self.model_tab.model_combo.setEditText(model_id)
+        
+        # Update status
+        self.statusBar().showMessage(f"Model ID '{model_id}' set. Click 'Load Model' to load it.")
+        
+        # Optionally, you could automatically trigger model loading:
+        # self.model_tab.load_model()
+
     def on_model_loaded(self, model_name, tokenizer, model):
         """Handle model loaded event"""
+        # Update code tab
         self.code_tab.set_model(model_name, tokenizer, model)
+        
+        # Update conversation tab - directly set the model instead of emitting a signal
+        # This avoids potential signal loop issues
+        if hasattr(self.conversation_tab, 'on_model_loaded'):
+            self.conversation_tab.on_model_loaded(model_name, tokenizer, model)
+        
         self.statusBar().showMessage(f"Model {model_name} loaded successfully")
         
         # Switch to code generation tab
@@ -209,38 +262,6 @@ class AdvancedCodeGeneratorApp(QMainWindow):
             logger.error(f"Error during application close: {str(e)}")
             event.accept()  # Accept anyway to allow exit
 
-
-if __name__ == "__main__":
-    # Create application
-    app = QApplication(sys.argv)
-    
-    # Set application info
-    app.setApplicationName("Advanced Code Generator")
-    app.setOrganizationName("AdvancedCodeGenerator")
-    app.setOrganizationDomain("advancedcodegenerator.ai")
-    
-    # Show splash screen
-    splash_pixmap = QPixmap("assets/icons/splash.png")
-    if splash_pixmap.isNull():
-        # Fallback splash with version text
-        splash_pixmap = QPixmap(400, 300)
-        splash_pixmap.fill(Qt.white)
-    
-    splash = QSplashScreen(splash_pixmap)
-    splash.showMessage(f"Starting Advanced Code Generator v{VERSION}...", 
-                      Qt.AlignBottom | Qt.AlignCenter, Qt.black)
-    splash.show()
-    app.processEvents()
-    
-    # Create main window
-    main_window = AdvancedCodeGeneratorApp()
-    
-    # Show main window and close splash
-    main_window.show()
-    splash.finish(main_window)
-    
-    # Run application
-    sys.exit(app.exec_())
 
 if __name__ == "__main__":
     # Create application
